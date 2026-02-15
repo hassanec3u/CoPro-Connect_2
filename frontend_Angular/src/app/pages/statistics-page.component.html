@@ -1,0 +1,135 @@
+<div class="statistics-page">
+  <header class="header">
+    <button class="menu-toggle" (click)="openSidebar()" aria-label="Ouvrir le menu">☰</button>
+    <h1>📊 Statistiques</h1>
+  </header>
+
+  <div *ngIf="loading" class="loading">Chargement des statistiques...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <div *ngIf="stats && !loading" class="content">
+    <div class="cards-grid">
+      <div class="stat-card">
+        <div class="stat-icon">🏠</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.totalLots }}</div>
+          <div class="stat-label">Lots Totaux</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🏗️</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.totalBatiments }}</div>
+          <div class="stat-label">Bâtiments</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.totalOccupants }}</div>
+          <div class="stat-label">Occupants Totaux</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🔑</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.totalHappix }}</div>
+          <div class="stat-label">Comptes Happix</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.moyenneOccupants.toFixed(1) }}</div>
+          <div class="stat-label">Moy. Occupants/Lot</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.lotsAvecOccupants }}</div>
+          <div class="stat-label">Lots Occupés</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>Répartition par Statut</h3>
+        <div *ngFor="let entry of (stats.statutCount | keyvalue)">
+          <div class="bar-item">
+            <div class="bar-label">{{ entry.key }}</div>
+            <div class="bar-container">
+              <div class="bar-fill" [style.width.%]="stats.totalLots > 0 ? (entry.value / stats.totalLots) * 100 : 0">
+                <span class="bar-value">{{ entry.value }}</span>
+              </div>
+            </div>
+            <div class="bar-percentage">
+              {{ stats.totalLots > 0 ? ((entry.value / stats.totalLots) * 100).toFixed(1) : 0 }}%
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>Répartition par Bâtiment</h3>
+        <div *ngFor="let entry of (stats.batimentCount | keyvalue)">
+          <div class="bar-item">
+            <div class="bar-label">{{ entry.key }}</div>
+            <div class="bar-container">
+              <div class="bar-fill" [style.width.%]="stats.totalLots > 0 ? (entry.value / stats.totalLots) * 100 : 0">
+                <span class="bar-value">{{ entry.value }}</span>
+              </div>
+            </div>
+            <div class="bar-percentage">
+              {{ stats.totalLots > 0 ? ((entry.value / stats.totalLots) * 100).toFixed(1) : 0 }}%
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>Lots Occupés vs Vides</h3>
+        <div class="bar-item">
+          <div class="bar-label">Occupés</div>
+          <div class="bar-container">
+            <div class="bar-fill green" [style.width.%]="stats.totalLots > 0 ? (stats.lotsAvecOccupants / stats.totalLots) * 100 : 0">
+              <span class="bar-value">{{ stats.lotsAvecOccupants }}</span>
+            </div>
+          </div>
+          <div class="bar-percentage">
+            {{ stats.totalLots > 0 ? ((stats.lotsAvecOccupants / stats.totalLots) * 100).toFixed(1) : 0 }}%
+          </div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label">Vides</div>
+          <div class="bar-container">
+            <div class="bar-fill red" [style.width.%]="stats.totalLots > 0 ? (stats.lotsVides / stats.totalLots) * 100 : 0">
+              <span class="bar-value">{{ stats.lotsVides }}</span>
+            </div>
+          </div>
+          <div class="bar-percentage">
+            {{ stats.totalLots > 0 ? ((stats.lotsVides / stats.totalLots) * 100).toFixed(1) : 0 }}%
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card" *ngIf="(stats.happixByType | keyvalue).length > 0">
+        <h3>Comptes Happix par Type</h3>
+        <div *ngFor="let entry of (stats.happixByType | keyvalue)">
+          <div class="bar-item">
+            <div class="bar-label">{{ entry.key }}</div>
+            <div class="bar-container">
+              <div class="bar-fill" [style.width.%]="stats.totalHappix > 0 ? (entry.value / stats.totalHappix) * 100 : 0">
+                <span class="bar-value">{{ entry.value }}</span>
+              </div>
+            </div>
+            <div class="bar-percentage">
+              {{ stats.totalHappix > 0 ? ((entry.value / stats.totalHappix) * 100).toFixed(1) : 0 }}%
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

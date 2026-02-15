@@ -1,0 +1,19 @@
+<div class="toolbar">
+  <input
+    class="search-input"
+    type="text"
+    placeholder="🔍 Rechercher (Nom, Lot, Happix...)"
+    [ngModel]="searchTerm"
+    (ngModelChange)="searchChange.emit($event)"
+  />
+
+  <select class="filter-select" [ngModel]="filterBat" (ngModelChange)="filterBatChange.emit($event)">
+    <option value="Tous">Tous les Bâtiments</option>
+    <option *ngFor="let bat of batiments" [value]="bat">Bâtiment {{ bat }}</option>
+  </select>
+
+  <select class="filter-select" [ngModel]="filterStatus" (ngModelChange)="filterStatusChange.emit($event)">
+    <option value="Tous">Tous les Statuts</option>
+    <option *ngFor="let status of statuts" [value]="status">{{ status }}</option>
+  </select>
+</div>

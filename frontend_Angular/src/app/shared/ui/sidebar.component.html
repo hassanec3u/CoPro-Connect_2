@@ -1,0 +1,22 @@
+<aside class="sidebar" [class.sidebar-open]="isOpen">
+  <div class="sidebar-header">
+    <h2>Pontet Admin</h2>
+    <button class="sidebar-close-btn" (click)="close.emit()" aria-label="Fermer le menu">✖</button>
+  </div>
+  <nav class="sidebar-nav">
+    <ul>
+      <li *ngFor="let item of menuItems">
+        <button
+          class="nav-btn"
+          [class.active]="currentPath === item.path"
+          (click)="handleNavigate(item.path)"
+        >
+          {{ item.label }}
+        </button>
+      </li>
+    </ul>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="sidebar-logout-btn" (click)="logout.emit()">🚪 Déconnexion</button>
+  </div>
+</aside>

@@ -1,0 +1,37 @@
+﻿version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: copro-mongodb
+    restart: unless-stopped
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_DATABASE: copro-connect
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - copro-network
+
+  backend:
+    build: .
+    container_name: copro-backend
+    restart: unless-stopped
+    ports:
+      - 4000:4000
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/copro-connect
+    depends_on:
+      - mongodb
+    networks:
+      - copro-network
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  copro-network:
+    driver: bridge

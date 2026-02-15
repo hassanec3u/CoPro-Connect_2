@@ -1,0 +1,8 @@
+<div class="toast-container">
+  <app-toast
+    *ngFor="let toast of toasts"
+    [message]="toast.message"
+    [type]="toast.type"
+    (close)="toastService.close(toast.id)"
+  ></app-toast>
+</div>

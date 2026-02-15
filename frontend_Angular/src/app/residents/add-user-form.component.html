@@ -1,0 +1,122 @@
+<div class="add-user-section">
+  <h3>➕ Ajouter un Lot + Occupants</h3>
+
+  <form class="add-form" (ngSubmit)="handleSubmit()">
+    <div class="form-grid">
+      <div class="field">
+        <label>Lot : <span class="required">*</span></label>
+        <input
+          type="text"
+          placeholder="Lot No. (nombre)"
+          [(ngModel)]="newUser.lot_id"
+          name="lot_id"
+          [class.input-error]="errors.lot_id"
+        />
+        <span class="error" *ngIf="errors.lot_id">{{ errors.lot_id }}</span>
+      </div>
+
+      <div class="field">
+        <label>Bâtiment : <span class="required">*</span></label>
+        <select
+          [(ngModel)]="newUser.batiment"
+          name="batiment"
+          [class.input-error]="errors.batiment"
+        >
+          <option value="" disabled>--</option>
+          <option *ngFor="let bat of batiments" [value]="bat">{{ bat }}</option>
+        </select>
+        <span class="error" *ngIf="errors.batiment">{{ errors.batiment }}</span>
+      </div>
+
+      <div class="field">
+        <label>Étage : <span class="required">*</span></label>
+        <input
+          type="text"
+          placeholder="Étage"
+          [(ngModel)]="newUser.etage"
+          name="etage"
+          [class.input-error]="errors.etage"
+        />
+        <span class="error" *ngIf="errors.etage">{{ errors.etage }}</span>
+      </div>
+
+      <div class="field">
+        <label>Appt : <span class="required">*</span></label>
+        <input
+          type="text"
+          placeholder="Appt"
+          [(ngModel)]="newUser.porte"
+          name="porte"
+          [class.input-error]="errors.porte"
+        />
+        <span class="error" *ngIf="errors.porte">{{ errors.porte }}</span>
+      </div>
+
+      <div class="field">
+        <label>Cave :</label>
+        <input
+          type="text"
+          placeholder="Cave (nombre)"
+          [(ngModel)]="newUser.cave_id"
+          name="cave_id"
+          [class.input-error]="errors.cave_id"
+        />
+        <span class="error" *ngIf="errors.cave_id">{{ errors.cave_id }}</span>
+      </div>
+
+      <div class="field">
+        <label>Statut :</label>
+        <select [(ngModel)]="newUser.statut_lot" name="statut_lot">
+          <option *ngFor="let s of statuts" [value]="s">{{ s }}</option>
+        </select>
+      </div>
+
+      <div class="field field-wide">
+        <label>Nom : <span class="required">*</span></label>
+        <input
+          type="text"
+          placeholder="Nom Propriétaire"
+          [(ngModel)]="newUser.proprietaire_nom"
+          name="proprietaire_nom"
+          [class.input-error]="errors.proprietaire_nom"
+        />
+        <span class="error" *ngIf="errors.proprietaire_nom">{{ errors.proprietaire_nom }}</span>
+      </div>
+
+      <div class="field">
+        <label>Mobile :</label>
+        <input type="text" placeholder="Mobile Propriétaire" [(ngModel)]="newUser.proprietaire_mobile" name="proprietaire_mobile" />
+      </div>
+
+      <div class="field field-wide">
+        <label>Email :</label>
+        <input type="email" placeholder="Email Propriétaire" [(ngModel)]="newUser.proprietaire_email" name="proprietaire_email" />
+      </div>
+    </div>
+
+    <div class="section">
+      <h4>Occupants :</h4>
+      <div *ngFor="let occ of newUser.occupants; let i = index" class="occupant-block">
+        <div class="field">
+          <label>Nom :</label>
+          <input type="text" [(ngModel)]="newUser.occupants[i].nom" name="occ_nom_{{ i }}" />
+        </div>
+        <div class="field">
+          <label>Mobile :</label>
+          <input type="text" [(ngModel)]="newUser.occupants[i].mobile" name="occ_mobile_{{ i }}" />
+        </div>
+        <div class="field">
+          <label>Email :</label>
+          <input type="text" [(ngModel)]="newUser.occupants[i].email" name="occ_email_{{ i }}" />
+        </div>
+        <button type="button" class="btn-delete small" (click)="removeOccupant(i)">Supprimer</button>
+      </div>
+
+      <button type="button" class="btn-add" (click)="addOccupant()">➕ Ajouter un occupant</button>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-save">Ajouter</button>
+    </div>
+  </form>
+</div>

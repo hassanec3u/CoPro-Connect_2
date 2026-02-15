@@ -1,0 +1,47 @@
+<td><strong>{{ user.lot_id }}</strong></td>
+  <td>
+    <span class="badge" [ngClass]="'bat-' + user.batiment">{{ user.batiment }}</span> {{ user.porte }}
+  </td>
+  <td>{{ user.etage }}</td>
+  <td>{{ user.cave_id || '-' }}</td>
+  <td class="proprietaire-cell">
+    <div class="proprietaire-header">
+      <strong class="proprietaire-name">{{ user.proprietaire_nom }}</strong>
+      <span class="chip" [ngClass]="statusChipClass">{{ statusLabel }}</span>
+    </div>
+    <div class="owner-contact">
+      <small *ngIf="user.proprietaire_mobile">📞 {{ user.proprietaire_mobile }}</small>
+      <small *ngIf="user.proprietaire_email">✉️ {{ user.proprietaire_email }}</small>
+    </div>
+  </td>
+  <td>
+    <div *ngFor="let occ of user.occupants.slice(0, 2); let i = index" class="occupantBlock">
+      <strong>👤 {{ occ.nom }}</strong>
+      <div class="occupantContact" *ngIf="occ.mobile || occ.email">
+        <small *ngIf="occ.mobile">📞 {{ occ.mobile }}</small>
+        <small *ngIf="occ.email">✉️ {{ occ.email }}</small>
+      </div>
+    </div>
+    <small *ngIf="user.occupants.length > 2" class="moreCount" [title]="getOccupantTooltip()">
+      +{{ user.occupants.length - 2 }} autre{{ user.occupants.length - 2 > 1 ? 's' : '' }}
+    </small>
+  </td>
+  <td>
+    <div *ngIf="(user.happix_accounts || []).length === 0"><small class="gray">Aucun</small></div>
+    <div *ngFor="let h of (user.happix_accounts || []).slice(0, 2); let i = index" class="happixBlock">
+      <span class="happixIcon">🔑</span>
+      <strong>{{ h.nom }}</strong>
+      <div class="happixMeta">
+        <span class="chip chip-happix">{{ getHappixTypeLabel(h.type) }}</span>
+        <span class="relation">{{ h.relation || '-' }}</span>
+      </div>
+      <small *ngIf="h.nom_borne && h.nom_borne !== h.nom" class="nomBorne">Borne: {{ h.nom_borne }}</small>
+    </div>
+    <small *ngIf="(user.happix_accounts || []).length > 2" class="moreCount" [title]="getHappixTooltip()">
+      +{{ (user.happix_accounts || []).length - 2 }} autre{{ (user.happix_accounts || []).length - 2 > 1 ? 's' : '' }}
+    </small>
+  </td>
+<td class="actions-cell">
+  <button class="btn-edit" (click)="edit.emit(user)">✏️ Éditer</button>
+  <button class="btn-delete" (click)="delete.emit(user.id || '')" [disabled]="!user.id">🗑️</button>
+</td>

@@ -1,0 +1,22 @@
+<div class="confirm-overlay" (click)="handleCancel($event)">
+  <div class="confirm-dialog" (click)="$event.stopPropagation(); $event.preventDefault()">
+    <div class="confirm-content">
+      <div class="confirm-icon">⚠️</div>
+      <p class="confirm-message">{{ message }}</p>
+    </div>
+    <div class="confirm-actions">
+      <button 
+        type="button" 
+        class="confirm-btn cancel" 
+        (click)="handleCancel($event)">
+        {{ cancelText }}
+      </button>
+      <button 
+        type="button" 
+        class="confirm-btn confirm" 
+        (click)="handleConfirm($event)">
+        {{ confirmText }}
+      </button>
+    </div>
+  </div>
+</div>

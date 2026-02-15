@@ -1,0 +1,32 @@
+<div *ngIf="totalPages > 0" class="pagination">
+  <button
+    class="pagination-nav"
+    [disabled]="currentPage === 1"
+    (click)="pageChange.emit(currentPage - 1)"
+  >
+    <span class="pagination-nav-text">◀ Précédent</span>
+    <span class="pagination-nav-icon">◀</span>
+  </button>
+
+  <div class="pagination-numbers">
+    <ng-container *ngFor="let page of visiblePages">
+      <span *ngIf="page === '...'" class="pagination-ellipsis">...</span>
+      <button
+        *ngIf="page !== '...'"
+        [class.active-page]="currentPage === page"
+        (click)="selectPage(page)"
+      >
+        {{ page }}
+      </button>
+    </ng-container>
+  </div>
+
+  <button
+    class="pagination-nav"
+    [disabled]="currentPage === totalPages"
+    (click)="pageChange.emit(currentPage + 1)"
+  >
+    <span class="pagination-nav-text">Suivant ▶</span>
+    <span class="pagination-nav-icon">▶</span>
+  </button>
+</div>

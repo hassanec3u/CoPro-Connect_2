@@ -1,0 +1,13 @@
+<div class="app-container">
+  <div class="sidebar-overlay" *ngIf="sidebarOpen && isMobile()" (click)="closeSidebar()"></div>
+  <app-sidebar
+    [currentPath]="router.url"
+    [isOpen]="sidebarOpen"
+    (navigateTo)="handleNavigate($event)"
+    (close)="closeSidebar()"
+    (logout)="handleLogout()"
+  ></app-sidebar>
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

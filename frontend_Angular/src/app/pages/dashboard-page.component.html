@@ -1,0 +1,122 @@
+<header class="header">
+  <div class="header-left">
+    <button class="menu-toggle" (click)="openSidebar()" aria-label="Ouvrir le menu">☰</button>
+    <h1>Gestion des Résidents</h1>
+  </div>
+  <div class="header-right">
+    <app-export-pdf-button [users]="users"></app-export-pdf-button>
+    <button class="btn-save" (click)="isAddModalOpen = true">➕ Ajouter un lot</button>
+  </div>
+</header>
+
+<app-toolbar
+  [searchTerm]="searchTerm"
+  [filterBat]="filterBat"
+  [filterStatus]="filterStatus"
+  (searchChange)="handleSearch($event)"
+  (filterBatChange)="handleFilterBat($event)"
+  (filterStatusChange)="handleFilterStatus($event)"
+></app-toolbar>
+
+<div class="table-container desktop-only">
+  <table class="lot-table">
+    <thead>
+      <tr>
+        <th class="sortable" (click)="handleSort('lotId')">
+          Lot No. <span class="sort-icon">{{ getSortIcon('lotId') }}</span>
+        </th>
+        <th class="sortable" (click)="handleSort('batiment')">
+          Bât/Appt <span class="sort-icon">{{ getSortIcon('batiment') }}</span>
+        </th>
+        <th>Étage</th>
+        <th>Cave</th>
+        <th class="sortable" (click)="handleSort('proprietaireNom')">
+          Propriétaire <span class="sort-icon">{{ getSortIcon('proprietaireNom') }}</span>
+        </th>
+        <th>Occupants</th>
+        <th>Comptes Happix</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr
+        app-user-row
+        *ngFor="let user of users"
+        [user]="user"
+        [ngClass]="(user.statut_lot?.includes('Bailleur')) ? 'row-bailleur' : 'row-resident'"
+        (edit)="handleEdit($event)"
+        (delete)="handleDelete($event)"
+      ></tr>
+      <tr *ngIf="users.length === 0">
+        <td colspan="8" class="empty">Aucun résultat trouvé</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="cards-container mobile-only">
+  <div *ngIf="users.length === 0" class="no-results">Aucun résultat trouvé</div>
+  <div *ngFor="let user of users" class="user-card" [ngClass]="(user.statut_lot?.includes('Bailleur')) ? 'row-bailleur' : 'row-resident'">
+    <div class="user-card-header">
+      <div>
+        <h3>Lot {{ user.lot_id }}</h3>
+        <span class="badge" [ngClass]="'bat-' + user.batiment">{{ user.batiment }}</span> {{ user.porte }}
+      </div>
+      <div class="user-card-actions">
+        <button class="btn-edit" (click)="handleEdit(user)">Éditer</button>
+        <button class="btn-delete" (click)="handleDelete(user.id)" [disabled]="!user.id">🗑️</button>
+      </div>
+    </div>
+    <div class="user-card-body">
+      <div><strong>Étage:</strong> {{ user.etage || '-' }}</div>
+      <div><strong>Cave:</strong> {{ user.cave_id || '-' }}</div>
+      <div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+          <strong>Propriétaire:</strong> {{ user.proprietaire_nom || '-' }}
+          <span class="chip" [ngClass]="(user.statut_lot?.includes('Bailleur')) ? 'chip-bailleur' : 'chip-resident'">
+            {{ (user.statut_lot?.includes('Bailleur')) ? 'Bailleur' : 'Résident' }}
+          </span>
+        </div>
+        <div class="subtext" *ngIf="user.proprietaire_mobile">📞 {{ user.proprietaire_mobile }}</div>
+        <div class="subtext" *ngIf="user.proprietaire_email">✉️ {{ user.proprietaire_email }}</div>
+      </div>
+      <div *ngIf="user.occupants.length">
+        <strong>Occupants:</strong>
+        <div *ngFor="let c of user.occupants" class="subtext">👤 {{ c.nom }}</div>
+      </div>
+      <div *ngIf="user.happix_accounts.length">
+        <strong>Comptes Happix:</strong>
+        <div *ngFor="let h of user.happix_accounts" class="subtext">🔑 {{ h.nom }} - {{ h.type || '-' }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-pagination
+  [totalPages]="totalPages"
+  [currentPage]="currentPage"
+  (pageChange)="onPageChange($event)"
+></app-pagination>
+
+<div class="modal-overlay" *ngIf="isAddModalOpen" (click)="isAddModalOpen = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="isAddModalOpen = false">✖</button>
+    <app-add-user-form (add)="handleAddUser($event)"></app-add-user-form>
+  </div>
+</div>
+
+<app-edit-modal
+  *ngIf="isEditModalOpen && editingUser"
+  [user]="editingUser"
+  (close)="closeEditModal()"
+  (save)="handleSaveEdit($event)"
+></app-edit-modal>
+
+<app-confirm-dialog
+  *ngIf="confirmDialog"
+  [message]="confirmDialog.message"
+  [confirmText]="confirmDialog.confirmText"
+  [cancelText]="confirmDialog.cancelText"
+  (confirm)="confirmDialog.onConfirm()"
+  (cancel)="confirmDialog = null"
+></app-confirm-dialog>

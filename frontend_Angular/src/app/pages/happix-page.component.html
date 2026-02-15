@@ -1,0 +1,8 @@
+<header class="header">
+  <div class="header-left">
+    <button class="menu-toggle" (click)="openSidebar()" aria-label="Ouvrir le menu">☰</button>
+    <h1>Comptes Happix</h1>
+  </div>
+</header>
+
+<app-happix-list [users]="users" (back)="goBack()"></app-happix-list>

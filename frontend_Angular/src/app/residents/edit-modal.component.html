@@ -1,0 +1,135 @@
+<div class="modal-overlay" (click)="close.emit()">
+  <div class="modal" (click)="$event.stopPropagation()" *ngIf="localUser">
+    <button class="modal-close" (click)="close.emit()">✖</button>
+    <h2>Modifier le Lot {{ localUser.lot_id }}</h2>
+
+    <div class="section">
+      <h4>🏠 Informations du Lot</h4>
+      <div class="modal-grid">
+        <div class="modal-field">
+          <label>Lot <span class="required">*</span></label>
+          <input [(ngModel)]="localUser.lot_id" name="lot_id" [class.input-error]="errors.lot_id" />
+          <span class="error" *ngIf="errors.lot_id">{{ errors.lot_id }}</span>
+        </div>
+        <div class="modal-field">
+          <label>Bâtiment <span class="required">*</span></label>
+          <select [(ngModel)]="localUser.batiment" name="batiment" [class.input-error]="errors.batiment">
+            <option value="" disabled>--</option>
+            <option *ngFor="let bat of batiments" [value]="bat">{{ bat }}</option>
+          </select>
+          <span class="error" *ngIf="errors.batiment">{{ errors.batiment }}</span>
+        </div>
+        <div class="modal-field">
+          <label>Étage <span class="required">*</span></label>
+          <input [(ngModel)]="localUser.etage" name="etage" [class.input-error]="errors.etage" />
+          <span class="error" *ngIf="errors.etage">{{ errors.etage }}</span>
+        </div>
+        <div class="modal-field">
+          <label>Appt <span class="required">*</span></label>
+          <input [(ngModel)]="localUser.porte" name="porte" [class.input-error]="errors.porte" />
+          <span class="error" *ngIf="errors.porte">{{ errors.porte }}</span>
+        </div>
+        <div class="modal-field">
+          <label>Cave</label>
+          <input [(ngModel)]="localUser.cave_id" name="cave_id" />
+        </div>
+        <div class="modal-field">
+          <label>Statut</label>
+          <select [(ngModel)]="localUser.statut_lot" name="statut_lot">
+            <option *ngFor="let s of statuts" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h4>👤 Propriétaire</h4>
+      <div class="modal-grid">
+        <div class="modal-field">
+          <label>Nom <span class="required">*</span></label>
+          <input [(ngModel)]="localUser.proprietaire_nom" name="proprietaire_nom" [class.input-error]="errors.proprietaire_nom" />
+          <span class="error" *ngIf="errors.proprietaire_nom">{{ errors.proprietaire_nom }}</span>
+        </div>
+        <div class="modal-field">
+          <label>Mobile</label>
+          <input [(ngModel)]="localUser.proprietaire_mobile" name="proprietaire_mobile" />
+        </div>
+        <div class="modal-field field-wide">
+          <label>Email</label>
+          <input [(ngModel)]="localUser.proprietaire_email" name="proprietaire_email" />
+        </div>
+      </div>
+    </div>
+
+    <div class="section" *ngIf="localUser.occupants && localUser.occupants.length > 0">
+      <h4>👥 Occupants</h4>
+      <div *ngFor="let occ of localUser.occupants; let i = index" class="occupant-block">
+        <button class="btn-delete small" (click)="removeOccupant(i)" type="button">✖</button>
+        <div class="modal-field">
+          <label>Nom</label>
+          <input [(ngModel)]="localUser.occupants[i].nom" name="occ_nom_{{ i }}" placeholder="Nom occupant" />
+        </div>
+        <div class="modal-field">
+          <label>Mobile</label>
+          <input [(ngModel)]="localUser.occupants[i].mobile" name="occ_mobile_{{ i }}" placeholder="06..." />
+        </div>
+        <div class="modal-field">
+          <label>Email</label>
+          <input [(ngModel)]="localUser.occupants[i].email" name="occ_email_{{ i }}" placeholder="email@exemple.com" />
+        </div>
+      </div>
+      <button class="btn-add" (click)="addOccupant()" type="button">+ Ajouter un occupant</button>
+    </div>
+    <div class="section" *ngIf="!localUser.occupants || localUser.occupants.length === 0">
+      <h4>👥 Occupants</h4>
+      <p class="empty-state">Aucun occupant</p>
+      <button class="btn-add" (click)="addOccupant()" type="button">+ Ajouter un occupant</button>
+    </div>
+
+    <div class="section" *ngIf="localUser.happix_accounts && localUser.happix_accounts.length > 0">
+      <h4>🔑 Comptes Happix</h4>
+      <div *ngFor="let h of localUser.happix_accounts; let i = index" class="happix-block">
+        <button class="btn-delete small" (click)="removeHappix(i)" type="button">✖</button>
+        <div class="modal-field">
+          <label>Nom</label>
+          <input [(ngModel)]="localUser.happix_accounts[i].nom" name="hap_nom_{{ i }}" />
+        </div>
+        <div class="modal-field">
+          <label>Mobile</label>
+          <input [(ngModel)]="localUser.happix_accounts[i].mobile" name="hap_mobile_{{ i }}" />
+        </div>
+        <div class="modal-field">
+          <label>Email</label>
+          <input [(ngModel)]="localUser.happix_accounts[i].email" name="hap_email_{{ i }}" />
+        </div>
+        <div class="modal-field">
+          <label>Nom borne</label>
+          <input [(ngModel)]="localUser.happix_accounts[i].nom_borne" name="hap_borne_{{ i }}" />
+        </div>
+        <div class="modal-field">
+          <label>Type</label>
+          <select [(ngModel)]="localUser.happix_accounts[i].type" name="hap_type_{{ i }}">
+            <option *ngFor="let t of happixTypes" [value]="t">{{ t }}</option>
+          </select>
+        </div>
+        <div class="modal-field">
+          <label>Relation</label>
+          <select [(ngModel)]="localUser.happix_accounts[i].relation" name="hap_rel_{{ i }}">
+            <option *ngFor="let r of happixRelations" [value]="r">{{ r }}</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-add" (click)="addHappix()" type="button">+ Ajouter un compte Happix</button>
+    </div>
+    <div class="section" *ngIf="!localUser.happix_accounts || localUser.happix_accounts.length === 0">
+      <h4>🔑 Comptes Happix</h4>
+      <p class="empty-state">Aucun compte Happix</p>
+      <button class="btn-add" (click)="addHappix()" type="button">+ Ajouter un compte Happix</button>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="close.emit()" type="button">Annuler</button>
+      <button class="btn-save" (click)="handleSave()" type="button">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>

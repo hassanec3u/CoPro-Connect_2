@@ -1,0 +1,94 @@
+# CoPro Connect - Git Ignore Configuration
+
+# ==========================================
+# Logs et fichiers de débogage
+# ==========================================
+*.log
+logs/
+*.log.*
+
+# ==========================================
+# Frontend Angular
+# ==========================================
+frontend_Angular/node_modules/
+frontend_Angular/dist/
+frontend_Angular/.angular/
+frontend_Angular/.nx/
+frontend_Angular/coverage/
+
+# ==========================================
+# Backend Spring Boot
+# ==========================================
+server_springboot/target/
+server_springboot/logs/
+server_springboot/.mvn/wrapper/maven-wrapper.jar
+server_springboot/mvnw
+server_springboot/mvnw.cmd
+
+# ==========================================
+# IDE et éditeurs
+# ==========================================
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+Thumbs.db
+
+# ==========================================
+# Configuration locale et secrets
+# ==========================================
+*.env
+*.env.local
+*.env.production
+.env.local
+.env.production.local
+application-local.properties
+secrets/
+
+# ==========================================
+# Base de données locale
+# ==========================================
+*.db
+*.sqlite
+*.sqlite3
+data/
+
+# ==========================================
+# Builds et packages
+# ==========================================
+*.class
+*.jar
+!server_springboot/mvnw.jar
+*.war
+*.ear
+*.tar.gz
+*.zip
+
+# ==========================================
+# Dépendances et caches
+# ==========================================
+.npm/
+.gradle/
+.m2/
+package-lock.json.backup
+pnpm-lock.yaml
+
+# ==========================================
+# Fichiers temporaires
+# ==========================================
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.cache/
+
+# ==========================================
+# Tests
+# ==========================================
+coverage/
+.nyc_output/
+test-results/
+junit.xml

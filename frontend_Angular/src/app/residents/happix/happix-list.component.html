@@ -1,0 +1,60 @@
+<div class="happix-list">
+  <div class="happix-header">
+    <h2>Comptes Happix inscrits ({{ entries.length }})</h2>
+    <div class="happix-actions">
+      <app-export-happix-pdf-button [entries]="entries"></app-export-happix-pdf-button>
+      <button class="btn-back" *ngIf="showBack" (click)="back.emit()">⬅ Retour</button>
+    </div>
+  </div>
+
+  <p *ngIf="entries.length === 0">Aucun compte Happix trouvé.</p>
+
+  <div *ngIf="entries.length > 0" class="table-container desktop-only">
+    <table class="happix-table">
+      <thead>
+        <tr>
+          <th (click)="handleSort('nom')">Nom</th>
+          <th (click)="handleSort('email')">Email</th>
+          <th (click)="handleSort('mobile')">Numéro</th>
+          <th>Nom borne</th>
+          <th (click)="handleSort('type')">Type</th>
+          <th (click)="handleSort('relation')">Relation</th>
+          <th (click)="handleSort('batiment')">Bâtiment</th>
+          <th (click)="handleSort('appart')">Appt</th>
+          <th (click)="handleSort('residents')">Résidents concernés</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let e of sortedEntries">
+          <td><strong>{{ e.nom }}</strong></td>
+          <td>{{ e.email }}</td>
+          <td>{{ e.mobile }}</td>
+          <td>{{ e.nom_borne || '-' }}</td>
+          <td><span class="chip">{{ getHappixTypeLabel(e.type) }}</span></td>
+          <td><span class="relation-badge">{{ e.relation }}</span></td>
+          <td><span class="badge">{{ e.batiment }}</span></td>
+          <td>{{ e.appart }}</td>
+          <td>{{ e.residents.join(', ') || '-' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="entries.length > 0" class="cards-container mobile-only">
+    <div *ngFor="let e of sortedEntries" class="happix-card">
+      <div class="card-header">
+        <h3>{{ e.nom }}</h3>
+        <span class="badge">{{ e.batiment }}</span>
+      </div>
+      <div class="card-body">
+        <div><strong>Email:</strong> {{ e.email }}</div>
+        <div><strong>Numéro:</strong> {{ e.mobile }}</div>
+        <div *ngIf="e.nom_borne"><strong>Nom borne:</strong> {{ e.nom_borne }}</div>
+        <div><strong>Type:</strong> {{ getHappixTypeLabel(e.type) }}</div>
+        <div><strong>Relation:</strong> {{ e.relation }}</div>
+        <div><strong>Appartement:</strong> {{ e.appart }}</div>
+        <div><strong>Résidents:</strong> {{ e.residents.join(', ') || '-' }}</div>
+      </div>
+    </div>
+  </div>
+</div>
