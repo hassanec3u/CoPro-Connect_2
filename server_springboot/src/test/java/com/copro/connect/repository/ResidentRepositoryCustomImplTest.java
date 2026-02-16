@@ -242,4 +242,59 @@ class ResidentRepositoryCustomImplTest {
 
         assertThat(stats.getHappixByType()).containsEntry("Non défini", 1L);
     }
+
+    // --- findByLotIdIgnoreCase ---
+
+    @Test
+    @DisplayName("findByLotIdIgnoreCase trouve un résident avec lotId exact")
+    void findByLotIdIgnoreCase_exactMatch_returnsResident() {
+        when(mongoTemplate.findOne(any(Query.class), eq(Resident.class))).thenReturn(resident);
+
+        var result = residentRepositoryCustom.findByLotIdIgnoreCase("LOT-001");
+
+        assertThat(result).isPresent();
+        assertThat(result.get()).isEqualTo(resident);
+        verify(mongoTemplate).findOne(any(Query.class), eq(Resident.class));
+    }
+
+    @Test
+    @DisplayName("findByLotIdIgnoreCase trouve un résident avec lotId en casse différente")
+    void findByLotIdIgnoreCase_caseInsensitive_returnsResident() {
+        when(mongoTemplate.findOne(any(Query.class), eq(Resident.class))).thenReturn(resident);
+
+        var result = residentRepositoryCustom.findByLotIdIgnoreCase("lot-001");
+
+        assertThat(result).isPresent();
+        assertThat(result.get()).isEqualTo(resident);
+        verify(mongoTemplate).findOne(any(Query.class), eq(Resident.class));
+    }
+
+    @Test
+    @DisplayName("findByLotIdIgnoreCase retourne empty si aucun résident trouvé")
+    void findByLotIdIgnoreCase_notFound_returnsEmpty() {
+        when(mongoTemplate.findOne(any(Query.class), eq(Resident.class))).thenReturn(null);
+
+        var result = residentRepositoryCustom.findByLotIdIgnoreCase("LOT-999");
+
+        assertThat(result).isEmpty();
+        verify(mongoTemplate).findOne(any(Query.class), eq(Resident.class));
+    }
+
+    @Test
+    @DisplayName("findByLotIdIgnoreCase avec lotId null retourne empty")
+    void findByLotIdIgnoreCase_nullLotId_returnsEmpty() {
+        var result = residentRepositoryCustom.findByLotIdIgnoreCase(null);
+
+        assertThat(result).isEmpty();
+        verify(mongoTemplate, never()).findOne(any(Query.class), eq(Resident.class));
+    }
+
+    @Test
+    @DisplayName("findByLotIdIgnoreCase avec lotId vide retourne empty")
+    void findByLotIdIgnoreCase_emptyLotId_returnsEmpty() {
+        var result = residentRepositoryCustom.findByLotIdIgnoreCase("   ");
+
+        assertThat(result).isEmpty();
+        verify(mongoTemplate, never()).findOne(any(Query.class), eq(Resident.class));
+    }
 }

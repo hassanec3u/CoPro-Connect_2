@@ -12,7 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -45,23 +44,21 @@ class ResidentValidatorTest {
     @Test
     @DisplayName("validateForCreation OK quand lotId unique")
     void validateForCreation_whenLotIdUnique_ok() {
-        Resident other = new Resident();
-        other.setLotId("LOT-002");
-        when(residentRepository.findAll()).thenReturn(List.of(other));
+        when(residentRepository.findByLotIdIgnoreCase("LOT-001")).thenReturn(Optional.empty());
 
         assertThatCode(() -> residentValidator.validateForCreation(resident)).doesNotThrowAnyException();
-        verify(residentRepository).findAll();
+        verify(residentRepository).findByLotIdIgnoreCase("LOT-001");
     }
 
     @Test
     @DisplayName("validateForCreation lance DuplicateResidentException si lotId existe")
     void validateForCreation_whenLotIdExists_throws() {
-        when(residentRepository.findAll()).thenReturn(List.of(resident));
+        when(residentRepository.findByLotIdIgnoreCase("LOT-001")).thenReturn(Optional.of(resident));
 
         assertThatThrownBy(() -> residentValidator.validateForCreation(resident))
                 .isInstanceOf(DuplicateResidentException.class)
                 .hasMessageContaining("LOT-001");
-        verify(residentRepository).findAll();
+        verify(residentRepository).findByLotIdIgnoreCase("LOT-001");
     }
 
     @Test
@@ -82,6 +79,7 @@ class ResidentValidatorTest {
 
         assertThatCode(() -> residentValidator.validateForUpdate("res-1", details)).doesNotThrowAnyException();
         verify(residentRepository).findById("res-1");
+        verify(residentRepository, never()).findByLotIdIgnoreCase(any());
     }
 
     @Test
@@ -111,7 +109,7 @@ class ResidentValidatorTest {
         other.setId("res-2");
         other.setLotId("LOT-002");
         when(residentRepository.findById("res-1")).thenReturn(Optional.of(resident));
-        when(residentRepository.findAll()).thenReturn(List.of(resident, other));
+        when(residentRepository.findByLotIdIgnoreCase("LOT-002")).thenReturn(Optional.of(other));
 
         Resident details = new Resident();
         details.setLotId("LOT-002");
@@ -119,6 +117,7 @@ class ResidentValidatorTest {
         assertThatThrownBy(() -> residentValidator.validateForUpdate("res-1", details))
                 .isInstanceOf(DuplicateResidentException.class)
                 .hasMessageContaining("LOT-002");
+        verify(residentRepository).findByLotIdIgnoreCase("LOT-002");
     }
 
     @Test
