@@ -25,9 +25,7 @@ public class ResidentValidator {
         
         // Vérifier que le lot ID n'existe pas déjà
         if (resident.getLotId() != null && !resident.getLotId().trim().isEmpty()) {
-            Optional<Resident> existingResident = residentRepository.findAll().stream()
-                .filter(r -> r.getLotId().equalsIgnoreCase(resident.getLotId().trim()))
-                .findFirst();
+            Optional<Resident> existingResident = residentRepository.findByLotIdIgnoreCase(resident.getLotId().trim());
             
             if (existingResident.isPresent()) {
                 log.warn("Duplicate lotId detected: {}", resident.getLotId());
@@ -53,12 +51,10 @@ public class ResidentValidator {
         // Vérifier si le nouveau lot ID n'existe pas déjà (sauf pour le résident actuel)
         if (residentDetails.getLotId() != null && !residentDetails.getLotId().trim().isEmpty()) {
             if (!existingResident.getLotId().equalsIgnoreCase(residentDetails.getLotId().trim())) {
-                Optional<Resident> duplicate = residentRepository.findAll().stream()
-                    .filter(r -> !r.getId().equals(id) && 
-                                r.getLotId().equalsIgnoreCase(residentDetails.getLotId().trim()))
-                    .findFirst();
+                Optional<Resident> duplicate = residentRepository.findByLotIdIgnoreCase(residentDetails.getLotId().trim());
                 
-                if (duplicate.isPresent()) {
+                // Vérifier que le résident trouvé n'est pas le même que celui qu'on met à jour
+                if (duplicate.isPresent() && !duplicate.get().getId().equals(id)) {
                     log.warn("Duplicate lotId detected during update: {}", residentDetails.getLotId());
                     throw new DuplicateResidentException(residentDetails.getLotId());
                 }

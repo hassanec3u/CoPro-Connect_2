@@ -12,9 +12,7 @@ import java.util.List;
 public interface ResidentRepository extends MongoRepository<Resident, String>, ResidentRepositoryCustom {
     
     List<Resident> findAllByOrderByBatimentAscPorteAsc();
-    
-    Page<Resident> findAllByOrderByBatimentAscPorteAsc(Pageable pageable);
-    
+
     List<Resident> findByBatiment(String batiment);
     
     List<Resident> findByStatutLot(String statutLot);

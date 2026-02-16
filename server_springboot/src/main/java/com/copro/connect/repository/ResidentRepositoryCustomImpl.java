@@ -10,8 +10,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
@@ -20,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Slf4j
@@ -173,5 +172,19 @@ public class ResidentRepositoryCustomImpl implements ResidentRepositoryCustom {
             moyenneOccupants,
             happixByType
         );
+    }
+    
+    @Override
+    public Optional<Resident> findByLotIdIgnoreCase(String lotId) {
+        if (lotId == null || lotId.trim().isEmpty()) {
+            return Optional.empty();
+        }
+        
+        // Créer une regex pour la recherche case-insensitive
+        Pattern pattern = Pattern.compile("^" + Pattern.quote(lotId.trim()) + "$", Pattern.CASE_INSENSITIVE);
+        Query query = new Query(Criteria.where("lotId").regex(pattern));
+        
+        Resident resident = mongoTemplate.findOne(query, Resident.class);
+        return Optional.ofNullable(resident);
     }
 }
