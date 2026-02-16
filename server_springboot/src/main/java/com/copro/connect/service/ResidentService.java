@@ -22,6 +22,7 @@ import java.util.List;
 public class ResidentService {
     
     private final ResidentRepository residentRepository;
+    private final ResidentHistoryService residentHistoryService;
     
     public List<Resident> getAllResidents() {
         log.debug("Fetching all residents");
@@ -92,6 +93,9 @@ public class ResidentService {
         
         Resident resident = getResidentById(id);
         
+        // Créer une copie de l'ancien résident pour l'historique
+        Resident oldResident = createCopy(resident);
+        
         // Normaliser les données
         normalizeResidentData(residentDetails);
         
@@ -108,13 +112,32 @@ public class ResidentService {
         resident.setOccupants(residentDetails.getOccupants());
         resident.setHappixAccounts(residentDetails.getHappixAccounts());
         
-        return residentRepository.save(resident);
+        Resident updatedResident = residentRepository.save(resident);
+        
+        // Enregistrer dans l'historique
+        try {
+            residentHistoryService.recordUpdate(oldResident, updatedResident);
+        } catch (Exception e) {
+            log.error("Erreur lors de l'enregistrement de l'historique pour le résident {}", id, e);
+            // On continue même si l'historique échoue pour ne pas bloquer la mise à jour
+        }
+        
+        return updatedResident;
     }
     
     @Transactional
     public void deleteResident(String id) {
         log.info("Deleting resident with id: {}", id);
         Resident resident = getResidentById(id);
+        
+        // Enregistrer dans l'historique avant la suppression
+        try {
+            residentHistoryService.recordDelete(resident);
+        } catch (Exception e) {
+            log.error("Erreur lors de l'enregistrement de l'historique pour le résident {}", id, e);
+            // On continue même si l'historique échoue pour ne pas bloquer la suppression
+        }
+        
         residentRepository.delete(resident);
     }
     
@@ -203,5 +226,40 @@ public class ResidentService {
                 }
             });
         }
+    }
+    
+    /**
+     * Crée une copie profonde d'un résident pour l'historique
+     */
+    private Resident createCopy(Resident original) {
+        Resident copy = new Resident();
+        copy.setId(original.getId());
+        copy.setLotId(original.getLotId());
+        copy.setBatiment(original.getBatiment());
+        copy.setEtage(original.getEtage());
+        copy.setPorte(original.getPorte());
+        copy.setCaveId(original.getCaveId());
+        copy.setStatutLot(original.getStatutLot());
+        copy.setProprietaireNom(original.getProprietaireNom());
+        copy.setProprietaireMobile(original.getProprietaireMobile());
+        copy.setProprietaireEmail(original.getProprietaireEmail());
+        copy.setCreatedAt(original.getCreatedAt());
+        copy.setUpdatedAt(original.getUpdatedAt());
+        
+        // Copie des occupants
+        if (original.getOccupants() != null) {
+            copy.setOccupants(new java.util.ArrayList<>(original.getOccupants()));
+        } else {
+            copy.setOccupants(new java.util.ArrayList<>());
+        }
+        
+        // Copie des comptes Happix
+        if (original.getHappixAccounts() != null) {
+            copy.setHappixAccounts(new java.util.ArrayList<>(original.getHappixAccounts()));
+        } else {
+            copy.setHappixAccounts(new java.util.ArrayList<>());
+        }
+        
+        return copy;
     }
 }

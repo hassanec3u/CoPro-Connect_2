@@ -14,6 +14,7 @@ export class UserRowComponent {
   @Input() user!: Resident;
   @Output() edit = new EventEmitter<Resident>();
   @Output() delete = new EventEmitter<string>();
+  @Output() showHistory = new EventEmitter<Resident>();
 
   getHappixTypeLabel = getHappixTypeLabel;
   // Angular templates n'exposent pas Math.* par défaut

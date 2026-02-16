@@ -42,6 +42,7 @@
     </small>
   </td>
 <td class="actions-cell">
+  <button class="btn-history" (click)="showHistory.emit(user)" title="Voir l'historique">📜</button>
   <button class="btn-edit" (click)="edit.emit(user)">✏️ Éditer</button>
   <button class="btn-delete" (click)="delete.emit(user.id || '')" [disabled]="!user.id">🗑️</button>
 </td>

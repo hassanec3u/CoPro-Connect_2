@@ -1,0 +1,87 @@
+<div class="modal-overlay" (click)="close.emit()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="close.emit()">✖</button>
+    <h2>
+      Historique
+      <span class="apartment-badge" *ngIf="apartment">
+        {{ apartment.batiment }} - Étage {{ apartment.etage }} - Appt {{ apartment.porte }}
+      </span>
+    </h2>
+
+    <div class="history-content">
+      <!-- Loading -->
+      <div *ngIf="loading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Chargement...</p>
+      </div>
+
+      <!-- Error -->
+      <div *ngIf="error" class="error-state">
+        <p>{{ error }}</p>
+      </div>
+
+      <!-- Empty -->
+      <div *ngIf="!loading && !error && history.length === 0" class="empty-state">
+        <span class="empty-icon">📋</span>
+        <p>Aucun historique pour cet appartement</p>
+      </div>
+
+      <!-- Timeline -->
+      <div *ngIf="!loading && !error && history.length > 0" class="timeline">
+        <div *ngFor="let entry of history; let i = index" class="timeline-item">
+          
+          <!-- Ligne de temps -->
+          <div class="timeline-marker" [ngClass]="entry.action_type === 'DELETE' ? 'marker-delete' : 'marker-update'">
+            <span class="marker-dot"></span>
+            <span class="timeline-line" *ngIf="i < history.length - 1"></span>
+          </div>
+
+          <!-- Contenu -->
+          <div class="timeline-content">
+            <div class="entry-header">
+              <span class="action-tag" [ngClass]="entry.action_type === 'DELETE' ? 'tag-delete' : 'tag-update'">
+                {{ entry.action_type === 'DELETE' ? 'SUPPRESSION' : 'MODIFICATION' }}
+              </span>
+              <span class="entry-date">{{ formatDate(entry.changed_at) }}</span>
+            </div>
+
+            <!-- Description résumée -->
+            <p class="entry-description">{{ entry.description }}</p>
+
+            <!-- Détail des changements groupés par catégorie -->
+            <div class="changes-list">
+              <div *ngFor="let group of groupByCategory(entry.changes)" class="change-group">
+                <div class="group-header">
+                  <span class="group-icon">{{ getCategoryIcon(group.category) }}</span>
+                  <span class="group-label">{{ getCategoryLabel(group.category) }}</span>
+                </div>
+                <div *ngFor="let change of group.items" class="change-row" [ngClass]="getChangeTypeClass(change)">
+                  <span class="change-icon">{{ getChangeIcon(change) }}</span>
+                  <span class="change-label">{{ change.field_label }}</span>
+                  <!-- Modification : ancien → nouveau -->
+                  <span class="change-values" *ngIf="change.change_type === 'MODIFIED'">
+                    <span class="old-value">{{ change.old_value || '(vide)' }}</span>
+                    <span class="arrow">→</span>
+                    <span class="new-value">{{ change.new_value || '(vide)' }}</span>
+                  </span>
+                  <!-- Ajout -->
+                  <span class="change-values" *ngIf="change.change_type === 'ADDED'">
+                    <span class="new-value">{{ change.new_value }}</span>
+                  </span>
+                  <!-- Suppression -->
+                  <span class="change-values" *ngIf="change.change_type === 'REMOVED'">
+                    <span class="old-value">{{ change.old_value }}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-close" (click)="close.emit()">Fermer</button>
+    </div>
+  </div>
+</div>

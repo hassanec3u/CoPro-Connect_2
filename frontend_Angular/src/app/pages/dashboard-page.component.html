@@ -46,6 +46,7 @@
         [ngClass]="(user.statut_lot?.includes('Bailleur')) ? 'row-bailleur' : 'row-resident'"
         (edit)="handleEdit($event)"
         (delete)="handleDelete($event)"
+        (showHistory)="handleShowHistory($event)"
       ></tr>
       <tr *ngIf="users.length === 0">
         <td colspan="8" class="empty">Aucun résultat trouvé</td>
@@ -63,6 +64,7 @@
         <span class="badge" [ngClass]="'bat-' + user.batiment">{{ user.batiment }}</span> {{ user.porte }}
       </div>
       <div class="user-card-actions">
+        <button class="btn-history" (click)="handleShowHistory(user)" title="Voir l'historique">📜</button>
         <button class="btn-edit" (click)="handleEdit(user)">Éditer</button>
         <button class="btn-delete" (click)="handleDelete(user.id)" [disabled]="!user.id">🗑️</button>
       </div>
@@ -120,3 +122,9 @@
   (confirm)="confirmDialog.onConfirm()"
   (cancel)="confirmDialog = null"
 ></app-confirm-dialog>
+
+<app-history-modal
+  *ngIf="isHistoryModalOpen && historyApartment"
+  [apartment]="historyApartment"
+  (close)="closeHistoryModal()"
+></app-history-modal>

@@ -167,9 +167,26 @@
   text-align: center;
 }
 
+.actions-cell .btn-history,
 .actions-cell .btn-edit,
 .actions-cell .btn-delete {
   margin: 0.25rem;
+}
+
+.btn-history {
+  padding: 0.375rem 0.75rem;
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.btn-history:hover {
+  background: #e0e0e0;
+  border-color: #999;
+  transform: scale(1.05);
 }
 
 .gray {

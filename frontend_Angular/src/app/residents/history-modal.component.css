@@ -1,0 +1,424 @@
+/* ==================== OVERLAY ==================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  z-index: 9999;
+  overflow-y: auto;
+  animation: fadeIn 0.2s ease-out;
+  padding: 2rem 1rem;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ==================== MODAL ==================== */
+.modal {
+  background: white;
+  padding: 2rem;
+  width: 700px;
+  max-width: 100%;
+  max-height: 85vh;
+  border-radius: 1.25rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  position: relative;
+  animation: slideUp 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: #f3f4f6;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: #666;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background: #e5e7eb;
+  color: #111;
+  transform: rotate(90deg);
+}
+
+.modal h2 {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.25rem;
+  color: #1f2937;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.apartment-badge {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 2rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+/* ==================== ETATS ==================== */
+.history-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.loading-state,
+.error-state,
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #6b7280;
+}
+
+.loading-state .spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid #e5e7eb;
+  border-top-color: #4f46e5;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-state {
+  color: #dc2626;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+/* ==================== TIMELINE ==================== */
+.timeline {
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-item {
+  display: flex;
+  gap: 1rem;
+  padding-bottom: 1.5rem;
+}
+
+.timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+/* Marqueur de timeline */
+.timeline-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 1.5rem;
+  padding-top: 0.25rem;
+}
+
+.marker-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.marker-update .marker-dot {
+  background: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.marker-delete .marker-dot {
+  background: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+.timeline-line {
+  width: 2px;
+  flex: 1;
+  background: #e5e7eb;
+  margin-top: 0.375rem;
+}
+
+/* Contenu de l'entrée */
+.timeline-content {
+  flex: 1;
+  min-width: 0;
+  background: #f9fafb;
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid #e5e7eb;
+  transition: box-shadow 0.2s;
+}
+
+.timeline-content:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Header de l'entrée */
+.entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.action-tag {
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.tag-update {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.tag-delete {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.entry-date {
+  font-size: 0.8125rem;
+  color: #9ca3af;
+}
+
+/* Description */
+.entry-description {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.9375rem;
+  color: #374151;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* ==================== LISTE DES CHANGEMENTS ==================== */
+.changes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.change-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.group-header {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-bottom: 0.125rem;
+}
+
+.group-icon {
+  font-size: 0.875rem;
+}
+
+.group-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Ligne de changement */
+.change-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.change-row.change-modified {
+  background: #eff6ff;
+  border-left: 3px solid #3b82f6;
+}
+
+.change-row.change-added {
+  background: #f0fdf4;
+  border-left: 3px solid #22c55e;
+}
+
+.change-row.change-removed {
+  background: #fef2f2;
+  border-left: 3px solid #ef4444;
+}
+
+.change-icon {
+  font-weight: 700;
+  font-size: 0.875rem;
+  width: 1rem;
+  text-align: center;
+  flex-shrink: 0;
+  line-height: 1.5;
+}
+
+.change-modified .change-icon {
+  color: #3b82f6;
+}
+
+.change-added .change-icon {
+  color: #22c55e;
+}
+
+.change-removed .change-icon {
+  color: #ef4444;
+}
+
+.change-label {
+  font-weight: 600;
+  color: #374151;
+  flex-shrink: 0;
+}
+
+.change-values {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+  color: #4b5563;
+}
+
+.old-value {
+  background: #fecaca;
+  color: #991b1b;
+  padding: 0.0625rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.8125rem;
+  text-decoration: line-through;
+}
+
+.arrow {
+  color: #9ca3af;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.new-value {
+  background: #bbf7d0;
+  color: #166534;
+  padding: 0.0625rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.8125rem;
+}
+
+/* Cas suppression seule : pas de line-through */
+.change-removed .old-value {
+  text-decoration: none;
+}
+
+/* Cas ajout seul : le new-value est bien vert deja */
+
+/* ==================== FOOTER ==================== */
+.modal-footer {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-close {
+  padding: 0.5rem 1.5rem;
+  background: #6b7280;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.btn-close:hover {
+  background: #4b5563;
+}
+
+/* ==================== SCROLLBAR ==================== */
+.history-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.history-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.history-content::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.history-content::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 640px) {
+  .modal {
+    padding: 1.25rem;
+    border-radius: 1rem;
+  }
+
+  .modal h2 {
+    font-size: 1.125rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .entry-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .change-row {
+    flex-wrap: wrap;
+  }
+
+  .change-values {
+    width: 100%;
+    margin-top: 0.125rem;
+  }
+}

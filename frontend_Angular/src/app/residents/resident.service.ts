@@ -3,6 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
 import { firstValueFrom, throwError } from 'rxjs';
 import { Resident } from '../models';
+import { ResidentHistoryResponse } from '../models/resident-history.model';
 import { getUserFriendlyErrorMessage } from '../utils/error.utils';
 import { environment } from '../../environments/environment';
 
@@ -119,6 +120,19 @@ export class ResidentService {
         .delete(`${API_BASE}/api/residents/${id}`)
         .pipe(catchError((err) => this.handleError(err)))
     );
+  }
+
+  /**
+   * Récupère l'historique d'un appartement
+   */
+  async getApartmentHistory(batiment: string, etage: string, porte: string): Promise<ResidentHistoryResponse[]> {
+    const url = `${API_BASE}/api/residents/history/apartment?batiment=${encodeURIComponent(batiment)}&etage=${encodeURIComponent(etage)}&porte=${encodeURIComponent(porte)}`;
+    const response = await firstValueFrom(
+      this.http
+        .get<ResidentHistoryResponse[]>(url)
+        .pipe(catchError((err) => this.handleError(err)))
+    );
+    return response;
   }
 
   private normalizeResident(data: any): Resident {

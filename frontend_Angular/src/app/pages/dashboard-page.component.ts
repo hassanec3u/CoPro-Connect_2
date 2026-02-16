@@ -13,6 +13,7 @@ import { AddUserFormComponent } from '../residents/add-user-form.component';
 import { UserRowComponent } from '../residents/user-row.component';
 import { ExportPdfButtonComponent } from '../shared/export/export-pdf-button.component';
 import { ConfirmDialogComponent } from '../shared/ui/confirm-dialog.component';
+import { HistoryModalComponent } from '../residents/history-modal.component';
 
 @Component({
   selector: 'app-dashboard-page',
@@ -25,7 +26,8 @@ import { ConfirmDialogComponent } from '../shared/ui/confirm-dialog.component';
     AddUserFormComponent,
     UserRowComponent,
     ExportPdfButtonComponent,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    HistoryModalComponent
   ],
   templateUrl: './dashboard-page.component.html',
   styleUrl: './dashboard-page.component.css'
@@ -45,6 +47,8 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
   editingUser: Resident | null = null;
   isEditModalOpen = false;
   isAddModalOpen = false;
+  isHistoryModalOpen = false;
+  historyApartment: { batiment: string; etage: string; porte: string } | null = null;
   confirmDialog: { message: string; onConfirm: () => void; confirmText: string; cancelText: string } | null = null;
 
   private sub?: Subscription;
@@ -201,5 +205,23 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
       const message = getUserFriendlyErrorMessage(err);
       this.toast.show(message, 'error');
     }
+  }
+
+  handleShowHistory(user: Resident): void {
+    if (user.batiment && user.etage && user.porte) {
+      this.historyApartment = {
+        batiment: user.batiment,
+        etage: user.etage,
+        porte: user.porte
+      };
+      this.isHistoryModalOpen = true;
+    } else {
+      this.toast.show('Informations d\'appartement incomplètes', 'error');
+    }
+  }
+
+  closeHistoryModal(): void {
+    this.isHistoryModalOpen = false;
+    this.historyApartment = null;
   }
 }
