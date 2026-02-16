@@ -135,6 +135,39 @@ export class ResidentService {
     return response;
   }
 
+  /**
+   * Télécharge le PDF des résidents depuis le backend
+   */
+  async exportResidentsPdf(): Promise<void> {
+    const blob = await firstValueFrom(
+      this.http
+        .get(`${API_BASE}/api/export/residents/pdf`, { responseType: 'blob' })
+        .pipe(catchError((err) => this.handleError(err)))
+    );
+    this.downloadBlob(blob, 'residents-list.pdf');
+  }
+
+  /**
+   * Télécharge le PDF des comptes Happix depuis le backend
+   */
+  async exportHappixPdf(): Promise<void> {
+    const blob = await firstValueFrom(
+      this.http
+        .get(`${API_BASE}/api/export/happix/pdf`, { responseType: 'blob' })
+        .pipe(catchError((err) => this.handleError(err)))
+    );
+    this.downloadBlob(blob, 'happix-list.pdf');
+  }
+
+  private downloadBlob(blob: Blob, filename: string): void {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+
   private normalizeResident(data: any): Resident {
     return {
       ...data,

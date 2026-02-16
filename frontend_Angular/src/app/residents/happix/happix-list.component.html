@@ -2,7 +2,7 @@
   <div class="happix-header">
     <h2>Comptes Happix inscrits ({{ entries.length }})</h2>
     <div class="happix-actions">
-      <app-export-happix-pdf-button [entries]="entries"></app-export-happix-pdf-button>
+      <app-export-happix-pdf-button></app-export-happix-pdf-button>
       <button class="btn-back" *ngIf="showBack" (click)="back.emit()">⬅ Retour</button>
     </div>
   </div>
