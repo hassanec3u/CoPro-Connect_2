@@ -1,30 +1,29 @@
 .toolbar {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
   flex-wrap: wrap;
-  padding: 1.25rem;
+  padding: 0.875rem 1rem;
   background: white;
-  border-radius: 1rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius-lg);
   border: 1px solid var(--color-gray-200);
 }
 
 .search-input,
 .filter-select {
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--color-gray-200);
-  border-radius: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
   outline: none;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   color: var(--color-gray-700);
   background: white;
-  transition: all 0.2s ease;
+  transition: border-color 0.15s;
 }
 
 .search-input {
   flex: 1;
-  min-width: 250px;
+  min-width: 220px;
 }
 
 .search-input::placeholder {
@@ -34,24 +33,23 @@
 .search-input:focus,
 .filter-select:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
-  background: rgba(79, 70, 229, 0.02);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
 }
 
 .filter-select {
-  min-width: 180px;
+  min-width: 160px;
   cursor: pointer;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 1rem center;
-  padding-right: 3rem;
+  background-position: right 0.75rem center;
+  padding-right: 2.5rem;
 }
 
 @media (max-width: 768px) {
   .toolbar {
     flex-direction: column;
-    padding: 1rem;
+    padding: 0.75rem;
   }
   
   .search-input,

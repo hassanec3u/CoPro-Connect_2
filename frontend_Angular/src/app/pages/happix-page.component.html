@@ -5,4 +5,4 @@
   </div>
 </header>
 
-<app-happix-list [users]="users" (back)="goBack()"></app-happix-list>
+<app-happix-list [users]="(residents$ | async) ?? []" (back)="goBack()"></app-happix-list>

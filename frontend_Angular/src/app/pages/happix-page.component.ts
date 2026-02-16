@@ -1,9 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
-import { ResidentsStoreService } from '../residents/residents-store.service';
+import { Router, NavigationEnd } from '@angular/router';
+import { Observable, Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { Resident } from '../models';
+import { ResidentsStoreService } from '../residents/residents-store.service';
 import { SidebarService } from '../core/sidebar.service';
 import { HappixListComponent } from '../residents/happix/happix-list.component';
 
@@ -15,24 +16,34 @@ import { HappixListComponent } from '../residents/happix/happix-list.component';
   styleUrl: './happix-page.component.css'
 })
 export class HappixPageComponent implements OnInit, OnDestroy {
-  users: Resident[] = [];
-  private sub?: Subscription;
+  residents$: Observable<Resident[]>;
+  private routerSub?: Subscription;
 
   constructor(
-    private store: ResidentsStoreService,
+    public store: ResidentsStoreService,
     private router: Router,
     private sidebar: SidebarService
-  ) {}
+  ) {
+    this.residents$ = this.store.residents$;
+  }
 
   ngOnInit(): void {
-    // Charger TOUS les résidents pour la page Happix
-    this.store.loadAllResidents();
-    
-    this.sub = this.store.residents$.subscribe((items: Resident[]) => (this.users = items));
+    this.reloadData();
+    this.routerSub = this.router.events
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe((e) => {
+        if (e.urlAfterRedirects.includes('happix')) {
+          this.reloadData();
+        }
+      });
   }
 
   ngOnDestroy(): void {
-    this.sub?.unsubscribe();
+    this.routerSub?.unsubscribe();
+  }
+
+  private reloadData(): void {
+    this.store.loadAllResidents();
   }
 
   openSidebar(): void {
