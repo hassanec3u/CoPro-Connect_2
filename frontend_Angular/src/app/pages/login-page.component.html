@@ -7,24 +7,25 @@
           <div class="logo-icon">🏢</div>
         </div>
         <h1 class="login-title">CoPro Connect</h1>
-        <p class="login-subtitle">Gestion de copropriété</p>
+        <p class="login-subtitle" *ngIf="!mfaStep">Gestion de copropriété</p>
+        <p class="login-subtitle" *ngIf="mfaStep">Vérification en deux étapes</p>
       </div>
 
-      <!-- Formulaire -->
-      <form (ngSubmit)="handleLogin($event)" class="login-form">
+      <!-- ==================== ÉTAPE 1 : LOGIN ==================== -->
+      <form *ngIf="!mfaStep" (ngSubmit)="handleLogin($event)" class="login-form">
         <div class="form-group">
           <label for="username" class="form-label">Nom d'utilisateur</label>
           <div class="input-wrapper">
             <span class="input-icon">👤</span>
-            <input 
+            <input
               id="username"
-              class="form-input" 
-              placeholder="Entrez votre identifiant" 
-              [(ngModel)]="username" 
+              class="form-input"
+              placeholder="Entrez votre identifiant"
+              [(ngModel)]="username"
               name="username"
-              (keydown.enter)="handleLogin($event)"
               autocomplete="username"
               [class.error]="error"
+              [disabled]="loading"
             />
           </div>
         </div>
@@ -33,19 +34,19 @@
           <label for="password" class="form-label">Mot de passe</label>
           <div class="input-wrapper">
             <span class="input-icon">🔒</span>
-            <input 
+            <input
               id="password"
-              class="form-input" 
-              [type]="showPassword ? 'text' : 'password'" 
-              placeholder="Entrez votre mot de passe" 
-              [(ngModel)]="password" 
+              class="form-input"
+              [type]="showPassword ? 'text' : 'password'"
+              placeholder="Entrez votre mot de passe"
+              [(ngModel)]="password"
               name="password"
-              (keydown.enter)="handleLogin($event)"
               autocomplete="current-password"
               [class.error]="error"
+              [disabled]="loading"
             />
-            <button 
-              type="button" 
+            <button
+              type="button"
               class="toggle-password"
               (click)="togglePasswordVisibility()"
               tabindex="-1"
@@ -60,23 +61,68 @@
           {{ error }}
         </div>
 
-        <button type="submit" class="submit-btn">
-          <span class="btn-text">Se connecter</span>
-          <span class="btn-arrow">→</span>
+        <button type="submit" class="submit-btn" [disabled]="loading">
+          <span *ngIf="!loading" class="btn-text">Se connecter</span>
+          <span *ngIf="loading" class="btn-text">Connexion...</span>
+          <span *ngIf="!loading" class="btn-arrow">→</span>
         </button>
       </form>
+
+      <!-- ==================== ÉTAPE 2 : MFA ==================== -->
+      <div *ngIf="mfaStep" class="mfa-section">
+        <div class="mfa-info">
+          <div class="mfa-icon">📧</div>
+          <p class="mfa-description">
+            Un code à 6 chiffres a été envoyé à <strong>{{ maskedEmail }}</strong>
+          </p>
+        </div>
+
+        <form (ngSubmit)="handleVerifyMfa($event)" class="mfa-form">
+          <div class="mfa-digits">
+            <input
+              *ngFor="let digit of mfaDigits; let i = index"
+              [id]="'mfa-digit-' + i"
+              type="text"
+              inputmode="numeric"
+              maxlength="6"
+              class="mfa-digit-input"
+              [value]="mfaDigits[i]"
+              (input)="onMfaDigitInput($event, i)"
+              (keydown)="onMfaDigitKeydown($event, i)"
+              [disabled]="loading"
+              autocomplete="one-time-code"
+            />
+          </div>
+
+          <div *ngIf="error" class="error-message">
+            <span class="error-icon">⚠️</span>
+            {{ error }}
+          </div>
+
+          <button type="submit" class="submit-btn" [disabled]="loading || mfaDigits.join('').length !== 6">
+            <span *ngIf="!loading" class="btn-text">Vérifier</span>
+            <span *ngIf="loading" class="btn-text">Vérification...</span>
+          </button>
+        </form>
+
+        <div class="mfa-actions">
+          <button
+            class="btn-link"
+            (click)="handleResendCode()"
+            [disabled]="countdown > 0 || loading"
+          >
+            {{ countdown > 0 ? 'Renvoyer le code (' + countdown + 's)' : 'Renvoyer le code' }}
+          </button>
+          <button class="btn-link btn-back-login" (click)="handleBackToLogin()">
+            ← Retour
+          </button>
+        </div>
+      </div>
 
       <!-- Footer -->
       <div class="login-footer">
         <p class="footer-text">Accès sécurisé aux résidents</p>
       </div>
-    </div>
-
-    <!-- Décoration -->
-    <div class="background-decoration">
-      <div class="circle circle-1"></div>
-      <div class="circle circle-2"></div>
-      <div class="circle circle-3"></div>
     </div>
   </div>
 </div>

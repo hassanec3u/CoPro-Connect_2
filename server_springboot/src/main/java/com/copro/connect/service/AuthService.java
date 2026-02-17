@@ -3,6 +3,7 @@ package com.copro.connect.service;
 import com.copro.connect.dto.LoginRequest;
 import com.copro.connect.dto.LoginResponse;
 import com.copro.connect.dto.MfaVerifyRequest;
+import com.copro.connect.exception.InvalidMfaCodeException;
 import com.copro.connect.model.User;
 import com.copro.connect.repository.UserRepository;
 import com.copro.connect.security.JwtUtils;
@@ -67,7 +68,7 @@ public class AuthService {
 
         if (!valid) {
             log.warn("MFA verification failed for user: {}", request.getUsername());
-            throw new RuntimeException("Code de vérification invalide ou expiré");
+            throw new InvalidMfaCodeException("Code de vérification invalide ou expiré");
         }
 
         User user = userRepository.findByUsername(request.getUsername())

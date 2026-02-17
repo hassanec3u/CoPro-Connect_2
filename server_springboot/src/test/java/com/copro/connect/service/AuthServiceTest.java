@@ -36,6 +36,9 @@ class AuthServiceTest {
     @Mock
     private JwtUtils jwtUtils;
 
+    @Mock
+    private MfaService mfaService;
+
     @InjectMocks
     private AuthService authService;
 
@@ -50,31 +53,56 @@ class AuthServiceTest {
         user.setUsername("admin");
         user.setPassword("encoded");
         user.setName("Admin");
+        user.setEmail("admin@test.fr");
         user.setRole("ADMIN");
+        user.setMfaEnabled(false);
 
         loginRequest = new LoginRequest("admin", "password");
         authentication = new UsernamePasswordAuthenticationToken(user.getUsername(), null, user.getAuthorities());
     }
 
     @Test
-    @DisplayName("login authentifie et retourne token + userInfo")
-    void login_shouldReturnTokenAndUserInfo() {
+    @DisplayName("login sans MFA retourne token + userInfo directement")
+    void login_noMfa_shouldReturnTokenAndUserInfo() {
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(authentication);
-        when(jwtUtils.generateToken(authentication)).thenReturn("jwt-token-123");
+        when(jwtUtils.generateToken("admin")).thenReturn("jwt-token-123");
         when(userRepository.findByUsername("admin")).thenReturn(Optional.of(user));
 
         LoginResponse response = authService.login(loginRequest);
 
         assertThat(response.getToken()).isEqualTo("jwt-token-123");
+        assertThat(response.getMfaRequired()).isFalse();
         assertThat(response.getUser()).isNotNull();
         assertThat(response.getUser().getUsername()).isEqualTo("admin");
         assertThat(response.getUser().getName()).isEqualTo("Admin");
         assertThat(response.getUser().getRole()).isEqualTo("ADMIN");
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
-        verify(jwtUtils).generateToken(authentication);
+        verify(jwtUtils).generateToken("admin");
         verify(userRepository).findByUsername("admin");
+        verifyNoInteractions(mfaService);
+    }
+
+    @Test
+    @DisplayName("login avec MFA retourne mfa_required=true sans token")
+    void login_withMfa_shouldReturnMfaRequired() {
+        user.setMfaEnabled(true);
+
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenReturn(authentication);
+        when(userRepository.findByUsername("admin")).thenReturn(Optional.of(user));
+        when(mfaService.getMaskedEmail("admin")).thenReturn("ad***@test.fr");
+
+        LoginResponse response = authService.login(loginRequest);
+
+        assertThat(response.getToken()).isNull();
+        assertThat(response.getMfaRequired()).isTrue();
+        assertThat(response.getMaskedEmail()).isEqualTo("ad***@test.fr");
+
+        verify(mfaService).generateAndSendCode("admin");
+        verify(mfaService).getMaskedEmail("admin");
+        verifyNoInteractions(jwtUtils);
     }
 
     @Test
@@ -82,12 +110,11 @@ class AuthServiceTest {
     void login_whenUserNotFoundAfterAuth_throws() {
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(authentication);
-        when(jwtUtils.generateToken(authentication)).thenReturn("jwt-token");
         when(userRepository.findByUsername("admin")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> authService.login(loginRequest))
                 .isInstanceOf(RuntimeException.class)
-                .hasMessageContaining("User not found");
+                .hasMessageContaining("introuvable");
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(userRepository).findByUsername("admin");

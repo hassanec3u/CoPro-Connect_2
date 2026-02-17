@@ -15,7 +15,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
 
   // Ne pas ajouter le token pour les routes d'authentification
-  const isAuthRoute = req.url.includes('/api/auth/login');
+  const isAuthRoute = req.url.includes('/api/auth/');
   
   // Récupérer le token actuel
   const token = authService.token;
@@ -40,11 +40,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   // Intercepter la réponse pour gérer les erreurs
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
+      // Ne pas interférer avec les erreurs des routes d'authentification
+      if (isAuthRoute) {
+        return throwError(() => error);
+      }
+
       // Gérer les erreurs d'authentification
       if (error.status === 401) {
-        // Token invalide ou expiré
         authService.logout(false);
-        // Rediriger vers la page de login si on n'y est pas déjà
         if (!router.url.includes('/login')) {
           router.navigate(['/login']);
         }

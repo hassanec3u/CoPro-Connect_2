@@ -6,9 +6,17 @@ import { environment } from '../../environments/environment';
 
 const API_BASE = environment.apiUrl.replace('/api', '');
 
-interface LoginResponse {
+export interface LoginResponse {
   token?: string;
+  mfa_required?: boolean;
+  masked_email?: string;
   message?: string;
+  user?: {
+    id: string;
+    username: string;
+    name: string;
+    role: string;
+  };
 }
 
 @Injectable({ providedIn: 'root' })
@@ -27,14 +35,49 @@ export class AuthService {
     }
   }
 
-  async login(username: string, password: string): Promise<string> {
+  /**
+   * Étape 1 : Login (username/password)
+   * Retourne la réponse complète pour que le composant gère le flux MFA
+   */
+  async login(username: string, password: string): Promise<LoginResponse> {
     try {
       const response = await firstValueFrom(
         this.http.post<LoginResponse>(`${API_BASE}/api/auth/login`, { username, password })
           .pipe(
-            // Intercepter les erreurs HTTP avant qu'elles ne soient converties
             catchError((error: HttpErrorResponse) => {
-              // Convertir immédiatement l'erreur HTTP en erreur utilisateur-friendly
+              const userMessage = getUserFriendlyErrorMessage(error);
+              return throwError(() => new Error(userMessage));
+            })
+          )
+      );
+
+      // Si MFA requis, retourner la réponse sans stocker de token
+      if (response?.mfa_required) {
+        return response;
+      }
+
+      // Pas de MFA -> stocker le token directement
+      if (!response?.token) {
+        throw new Error(response?.message || 'Erreur de connexion. Veuillez réessayer.');
+      }
+
+      this.storeToken(response.token);
+      return response;
+    } catch (error: any) {
+      const userMessage = getUserFriendlyErrorMessage(error);
+      throw new Error(userMessage);
+    }
+  }
+
+  /**
+   * Étape 2 : Vérification du code MFA
+   */
+  async verifyMfa(username: string, code: string): Promise<LoginResponse> {
+    try {
+      const response = await firstValueFrom(
+        this.http.post<LoginResponse>(`${API_BASE}/api/auth/verify-mfa`, { username, code })
+          .pipe(
+            catchError((error: HttpErrorResponse) => {
               const userMessage = getUserFriendlyErrorMessage(error);
               return throwError(() => new Error(userMessage));
             })
@@ -42,19 +85,12 @@ export class AuthService {
       );
 
       if (!response?.token) {
-        throw new Error(response?.message || 'Erreur de connexion. Veuillez réessayer.');
+        throw new Error(response?.message || 'Code de vérification invalide.');
       }
 
-      if (!this.isTokenValid(response.token)) {
-        throw new Error('Erreur d\'authentification. Veuillez réessayer.');
-      }
-
-      localStorage.setItem('token', response.token);
-      this.tokenSubject.next(response.token);
-      this.startTokenMonitor(response.token);
-      return response.token;
+      this.storeToken(response.token);
+      return response;
     } catch (error: any) {
-      // S'assurer que toutes les erreurs sont converties et propagées
       const userMessage = getUserFriendlyErrorMessage(error);
       throw new Error(userMessage);
     }
@@ -76,6 +112,15 @@ export class AuthService {
   get isAuthenticated(): boolean {
     const token = this.tokenSubject.value;
     return !!token && this.isTokenValid(token);
+  }
+
+  private storeToken(token: string): void {
+    if (!this.isTokenValid(token)) {
+      throw new Error('Erreur d\'authentification. Veuillez réessayer.');
+    }
+    localStorage.setItem('token', token);
+    this.tokenSubject.next(token);
+    this.startTokenMonitor(token);
   }
 
   private getStoredValidToken(): string | null {

@@ -195,6 +195,99 @@
   color: var(--color-gray-400);
 }
 
+/* ==================== MFA ==================== */
+.mfa-section {
+  margin-bottom: 1.25rem;
+}
+
+.mfa-info {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.mfa-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.mfa-description {
+  color: var(--color-gray-600);
+  font-size: 0.875rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.mfa-form {
+  margin-bottom: 1rem;
+}
+
+.mfa-digits {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.mfa-digit-input {
+  width: 48px;
+  height: 56px;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-gray-900);
+  border: 2px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  background: white;
+  outline: none;
+  transition: all 0.15s;
+  caret-color: var(--color-primary);
+}
+
+.mfa-digit-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.mfa-digit-input:disabled {
+  background: var(--color-gray-50);
+  opacity: 0.7;
+}
+
+.mfa-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.375rem 0;
+  transition: color 0.15s;
+}
+
+.btn-link:hover:not(:disabled) {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
+}
+
+.btn-link:disabled {
+  color: var(--color-gray-400);
+  cursor: not-allowed;
+}
+
+.btn-back-login {
+  color: var(--color-gray-500);
+}
+
+.btn-back-login:hover:not(:disabled) {
+  color: var(--color-gray-700);
+}
+
 /* ==================== DECORATION ==================== */
 .background-decoration,
 .circle,

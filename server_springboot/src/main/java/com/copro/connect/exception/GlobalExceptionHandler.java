@@ -66,6 +66,17 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
     
+    @ExceptionHandler(InvalidMfaCodeException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidMfaCode(InvalidMfaCodeException ex, WebRequest request) {
+        log.warn("Invalid MFA code: {}", ex.getMessage());
+        ErrorResponse error = new ErrorResponse(
+                ex.getMessage(),
+                HttpStatus.UNAUTHORIZED.value(),
+                request.getDescription(false).replace("uri=", "")
+        );
+        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    }
+
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<ErrorResponse> handleValidation(ValidationException ex, WebRequest request) {
         log.warn("Validation error: {}", ex.getMessage());

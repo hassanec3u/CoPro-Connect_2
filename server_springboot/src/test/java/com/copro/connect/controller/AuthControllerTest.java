@@ -30,8 +30,8 @@ class AuthControllerTest {
     @Test
     @DisplayName("login retourne token et userInfo")
     void login_returnsTokenAndUser() {
-        LoginResponse.UserInfo userInfo = new LoginResponse.UserInfo("user-1", "admin", "Admin", "ADMIN");
-        LoginResponse response = new LoginResponse("jwt-token-123", userInfo);
+        LoginResponse response = LoginResponse.success("jwt-token-123",
+                new com.copro.connect.model.User("user-1", "admin", "password", "Admin", "admin@test.fr", "ADMIN", true, null, null));
         when(authService.login(any(LoginRequest.class))).thenReturn(response);
 
         LoginRequest request = new LoginRequest("admin", "password");
