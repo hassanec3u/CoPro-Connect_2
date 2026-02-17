@@ -1,0 +1,3 @@
+# Script d'initialisation MongoDB - CoPro Connect
+pymongo>=4.6.0
+bcrypt>=4.1.0
