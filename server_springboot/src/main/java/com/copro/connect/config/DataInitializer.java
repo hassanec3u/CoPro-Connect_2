@@ -40,12 +40,15 @@ public class DataInitializer implements CommandLineRunner {
             admin.setUsername("admin");
             admin.setPassword(passwordEncoder.encode("admin123"));
             admin.setName("Administrateur");
+            admin.setEmail("admin@copro-connect.fr");
             admin.setRole("ADMIN");
+            admin.setMfaEnabled(true);
             
             userRepository.save(admin);
             log.info("✅ Admin user created successfully!");
             log.info("   Username: admin");
             log.info("   Password: admin123");
+            log.info("   Email: admin@copro-connect.fr");
         } else {
             log.info("ℹ️  Admin user already exists");
         }

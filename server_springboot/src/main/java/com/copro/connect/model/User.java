@@ -14,6 +14,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import java.time.Instant;
 import java.util.Collection;
@@ -39,7 +40,12 @@ public class User implements UserDetails {
     
     private String name;
     
+    @Email(message = "L'adresse email n'est pas valide")
+    private String email;
+    
     private String role;
+    
+    private boolean mfaEnabled = true;
     
     @CreatedDate
     @JsonProperty("createdAt")
