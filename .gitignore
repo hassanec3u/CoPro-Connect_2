@@ -40,11 +40,14 @@ Thumbs.db
 # Configuration locale et secrets
 # ==========================================
 *.env
+!*.env.example
 *.env.local
 *.env.production
 .env.local
 .env.production.local
 application-local.properties
+server_springboot/src/main/resources/application.properties
+server_springboot/src/main/resources/application-dev.properties
 secrets/
 
 # ==========================================

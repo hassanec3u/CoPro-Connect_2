@@ -81,6 +81,13 @@
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
         
+        <!-- Dotenv - Chargement automatique du fichier .env -->
+        <dependency>
+            <groupId>me.paulschwarz</groupId>
+            <artifactId>spring-dotenv</artifactId>
+            <version>4.0.0</version>
+        </dependency>
+        
         <!-- Lombok (optionnel mais recommandé) -->
         <dependency>
             <groupId>org.projectlombok</groupId>
