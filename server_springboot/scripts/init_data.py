@@ -83,7 +83,7 @@ def ensure_admin_user(db):
         "username": "admin",
         "password": hashed.decode("utf-8"),
         "name": "Administrateur",
-        "email": "admin@copro-connect.fr",
+        "email": "abouchekou@gmail.com",
         "role": "ADMIN",
         "mfaEnabled": True,
         "createdAt": datetime.utcnow(),

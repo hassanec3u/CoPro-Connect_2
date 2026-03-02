@@ -1,0 +1,57 @@
+# CoPro Connect - Stack complète (MongoDB + Backend + Frontend)
+# À la racine du projet : docker compose up -d
+
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: copro-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: copro-connect
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - copro-network
+
+  backend:
+    build:
+      context: ./server_springboot
+      dockerfile: Dockerfile
+    container_name: copro-backend
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SERVER_PORT: 4000
+      MONGODB_URI: mongodb://mongodb:27017/copro-connect
+      CORS_ORIGINS: http://localhost:4200,http://localhost:80,http://localhost
+    depends_on:
+      - mongodb
+    networks:
+      - copro-network
+
+  frontend:
+    build:
+      context: ./frontend_Angular
+      dockerfile: Dockerfile
+    container_name: copro-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - copro-network
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  copro-network:
+    driver: bridge
