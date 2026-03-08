@@ -1,5 +1,6 @@
 package com.copro.connect.service;
 
+import com.copro.connect.exception.EmailSendException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -39,8 +40,8 @@ public class EmailService {
             mailSender.send(message);
             log.info("MFA code sent to {}", maskEmail(toEmail));
         } catch (MessagingException | java.io.UnsupportedEncodingException e) {
-            log.error("Failed to send MFA email to {}: {}", maskEmail(toEmail), e.getMessage());
-            throw new RuntimeException("Impossible d'envoyer l'email de vérification", e);
+            log.error("Failed to send MFA email to {}", maskEmail(toEmail), e);
+            throw new EmailSendException("Impossible d'envoyer l'email de vérification", e);
         }
     }
 

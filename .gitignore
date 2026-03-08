@@ -49,6 +49,7 @@ application-local.properties
 server_springboot/src/main/resources/application.properties
 server_springboot/src/main/resources/application-dev.properties
 secrets/
+server_springboot/env
 
 # ==========================================
 # Base de données locale

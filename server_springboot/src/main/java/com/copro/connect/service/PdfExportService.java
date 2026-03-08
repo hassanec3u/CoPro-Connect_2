@@ -35,6 +35,9 @@ public class PdfExportService {
     private static final Color HEADER_BG = new Color(37, 99, 235);
     private static final Color STRIPE_BG = new Color(249, 250, 251);
 
+    private static final String HAPPIX = "Happix";
+    private static final String LISTE_COMPTES_HAPPIX = "Liste des comptes " + HAPPIX;
+
     /**
      * Exporte tous les résidents en PDF
      */
@@ -100,7 +103,7 @@ public class PdfExportService {
      * Exporte tous les comptes Happix en PDF
      */
     public byte[] exportHappixPdf() {
-        log.info("Generating Happix PDF export");
+        log.info("Generating {} PDF export", HAPPIX);
         List<Resident> residents = residentRepository.findAllByOrderByBatimentAscPorteAsc();
 
         // Extraire tous les comptes Happix
@@ -128,7 +131,7 @@ public class PdfExportService {
             PdfWriter.getInstance(document, out);
             document.open();
 
-            Paragraph title = new Paragraph("Liste des comptes Happix", TITLE_FONT);
+            Paragraph title = new Paragraph(LISTE_COMPTES_HAPPIX, TITLE_FONT);
             title.setSpacingAfter(4);
             document.add(title);
 
@@ -165,7 +168,7 @@ public class PdfExportService {
             document.add(table);
             document.close();
         } catch (Exception e) {
-            log.error("Error generating Happix PDF", e);
+            log.error("Error generating {} PDF", HAPPIX, e);
             throw new RuntimeException("Erreur lors de la génération du PDF", e);
         }
 

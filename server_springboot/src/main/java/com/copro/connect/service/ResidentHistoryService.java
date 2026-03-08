@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -58,25 +57,25 @@ public class ResidentHistoryService {
         
         List<ChangeDetail> changes = new ArrayList<>();
         
-        changes.add(new ChangeDetail("LOT", "REMOVED", 
-                "Lot " + resident.getLotId(), 
+        changes.add(new ChangeDetail(ChangeDetail.CATEGORY_LOT, ChangeDetail.CHANGE_TYPE_REMOVED,
+                "Lot " + resident.getLotId(),
                 formatLotSummary(resident), null));
-        
+
         if (resident.getProprietaireNom() != null) {
-            changes.add(new ChangeDetail("PROPRIETAIRE", "REMOVED", 
+            changes.add(new ChangeDetail(ChangeDetail.CATEGORY_PROPRIETAIRE, ChangeDetail.CHANGE_TYPE_REMOVED,
                     "Propriétaire", resident.getProprietaireNom(), null));
         }
-        
+
         List<Occupant> occupants = resident.getOccupants() != null ? resident.getOccupants() : Collections.emptyList();
         for (Occupant occ : occupants) {
-            changes.add(new ChangeDetail("OCCUPANT", "REMOVED", 
-                    "Occupant", occ.getNom(), null));
+            changes.add(new ChangeDetail(ChangeDetail.CATEGORY_OCCUPANT, ChangeDetail.CHANGE_TYPE_REMOVED,
+                    ChangeDetail.LABEL_OCCUPANT, occ.getNom(), null));
         }
-        
+
         List<HappixAccount> happix = resident.getHappixAccounts() != null ? resident.getHappixAccounts() : Collections.emptyList();
         for (HappixAccount h : happix) {
-            changes.add(new ChangeDetail("HAPPIX", "REMOVED", 
-                    "Compte Happix", h.getNom(), null));
+            changes.add(new ChangeDetail(ChangeDetail.CATEGORY_HAPPIX, ChangeDetail.CHANGE_TYPE_REMOVED,
+                    ChangeDetail.LABEL_COMPTE_HAPPIX, h.getNom(), null));
         }
         
         String description = "Suppression du lot " + resident.getLotId() 
@@ -114,17 +113,17 @@ public class ResidentHistoryService {
         List<ChangeDetail> changes = new ArrayList<>();
         
         // Champs du lot
-        compareField(changes, "LOT", "Numéro de lot", oldR.getLotId(), newR.getLotId());
-        compareField(changes, "LOT", "Bâtiment", oldR.getBatiment(), newR.getBatiment());
-        compareField(changes, "LOT", "Étage", oldR.getEtage(), newR.getEtage());
-        compareField(changes, "LOT", "Appartement", oldR.getPorte(), newR.getPorte());
-        compareField(changes, "LOT", "Cave", oldR.getCaveId(), newR.getCaveId());
-        compareField(changes, "LOT", "Statut", oldR.getStatutLot(), newR.getStatutLot());
-        
+        compareField(changes, ChangeDetail.CATEGORY_LOT, "Numéro de lot", oldR.getLotId(), newR.getLotId());
+        compareField(changes, ChangeDetail.CATEGORY_LOT, "Bâtiment", oldR.getBatiment(), newR.getBatiment());
+        compareField(changes, ChangeDetail.CATEGORY_LOT, "Étage", oldR.getEtage(), newR.getEtage());
+        compareField(changes, ChangeDetail.CATEGORY_LOT, "Appartement", oldR.getPorte(), newR.getPorte());
+        compareField(changes, ChangeDetail.CATEGORY_LOT, "Cave", oldR.getCaveId(), newR.getCaveId());
+        compareField(changes, ChangeDetail.CATEGORY_LOT, "Statut", oldR.getStatutLot(), newR.getStatutLot());
+
         // Champs du propriétaire
-        compareField(changes, "PROPRIETAIRE", "Nom du propriétaire", oldR.getProprietaireNom(), newR.getProprietaireNom());
-        compareField(changes, "PROPRIETAIRE", "Téléphone du propriétaire", oldR.getProprietaireMobile(), newR.getProprietaireMobile());
-        compareField(changes, "PROPRIETAIRE", "Email du propriétaire", oldR.getProprietaireEmail(), newR.getProprietaireEmail());
+        compareField(changes, ChangeDetail.CATEGORY_PROPRIETAIRE, "Nom du propriétaire", oldR.getProprietaireNom(), newR.getProprietaireNom());
+        compareField(changes, ChangeDetail.CATEGORY_PROPRIETAIRE, "Téléphone du propriétaire", oldR.getProprietaireMobile(), newR.getProprietaireMobile());
+        compareField(changes, ChangeDetail.CATEGORY_PROPRIETAIRE, "Email du propriétaire", oldR.getProprietaireEmail(), newR.getProprietaireEmail());
         
         // Occupants
         detectOccupantChanges(changes, 
@@ -144,7 +143,7 @@ public class ResidentHistoryService {
         String nw = normalizeValue(newVal);
         
         if (!Objects.equals(old, nw)) {
-            changes.add(new ChangeDetail(category, "MODIFIED", label, old, nw));
+            changes.add(new ChangeDetail(category, ChangeDetail.CHANGE_TYPE_MODIFIED, label, old, nw));
         }
     }
     
@@ -163,35 +162,35 @@ public class ResidentHistoryService {
         // Occupants supprimés
         for (Map.Entry<String, Occupant> entry : oldMap.entrySet()) {
             if (!newMap.containsKey(entry.getKey())) {
-                changes.add(new ChangeDetail("OCCUPANT", "REMOVED", 
-                        "Occupant", entry.getValue().getNom(), null));
+                changes.add(new ChangeDetail(ChangeDetail.CATEGORY_OCCUPANT, ChangeDetail.CHANGE_TYPE_REMOVED,
+                        ChangeDetail.LABEL_OCCUPANT, entry.getValue().getNom(), null));
             }
         }
-        
+
         // Occupants ajoutés
         for (Map.Entry<String, Occupant> entry : newMap.entrySet()) {
             if (!oldMap.containsKey(entry.getKey())) {
-                changes.add(new ChangeDetail("OCCUPANT", "ADDED", 
-                        "Occupant", null, entry.getValue().getNom()));
+                changes.add(new ChangeDetail(ChangeDetail.CATEGORY_OCCUPANT, ChangeDetail.CHANGE_TYPE_ADDED,
+                        ChangeDetail.LABEL_OCCUPANT, null, entry.getValue().getNom()));
             }
         }
-        
+
         // Occupants modifiés (même nom, données différentes)
+        addOccupantModifiedChanges(changes, oldMap, newMap);
+    }
+
+    private void addOccupantModifiedChanges(List<ChangeDetail> changes, Map<String, Occupant> oldMap, Map<String, Occupant> newMap) {
         for (Map.Entry<String, Occupant> entry : newMap.entrySet()) {
-            if (oldMap.containsKey(entry.getKey())) {
-                Occupant oldOcc = oldMap.get(entry.getKey());
-                Occupant newOcc = entry.getValue();
-                
-                if (!Objects.equals(normalizeValue(oldOcc.getMobile()), normalizeValue(newOcc.getMobile()))) {
-                    changes.add(new ChangeDetail("OCCUPANT", "MODIFIED", 
-                            "Tél. de " + newOcc.getNom(), 
-                            oldOcc.getMobile(), newOcc.getMobile()));
-                }
-                if (!Objects.equals(normalizeValue(oldOcc.getEmail()), normalizeValue(newOcc.getEmail()))) {
-                    changes.add(new ChangeDetail("OCCUPANT", "MODIFIED", 
-                            "Email de " + newOcc.getNom(), 
-                            oldOcc.getEmail(), newOcc.getEmail()));
-                }
+            if (!oldMap.containsKey(entry.getKey())) continue;
+            Occupant oldOcc = oldMap.get(entry.getKey());
+            Occupant newOcc = entry.getValue();
+            if (!Objects.equals(normalizeValue(oldOcc.getMobile()), normalizeValue(newOcc.getMobile()))) {
+                changes.add(new ChangeDetail(ChangeDetail.CATEGORY_OCCUPANT, ChangeDetail.CHANGE_TYPE_MODIFIED,
+                        "Tél. de " + newOcc.getNom(), oldOcc.getMobile(), newOcc.getMobile()));
+            }
+            if (!Objects.equals(normalizeValue(oldOcc.getEmail()), normalizeValue(newOcc.getEmail()))) {
+                changes.add(new ChangeDetail(ChangeDetail.CATEGORY_OCCUPANT, ChangeDetail.CHANGE_TYPE_MODIFIED,
+                        "Email de " + newOcc.getNom(), oldOcc.getEmail(), newOcc.getEmail()));
             }
         }
     }
@@ -212,53 +211,44 @@ public class ResidentHistoryService {
         for (Map.Entry<String, HappixAccount> entry : oldMap.entrySet()) {
             if (!newMap.containsKey(entry.getKey())) {
                 HappixAccount h = entry.getValue();
-                changes.add(new ChangeDetail("HAPPIX", "REMOVED", 
-                        "Compte Happix", h.getNom(), null));
+                changes.add(new ChangeDetail(ChangeDetail.CATEGORY_HAPPIX, ChangeDetail.CHANGE_TYPE_REMOVED,
+                        ChangeDetail.LABEL_COMPTE_HAPPIX, h.getNom(), null));
             }
         }
-        
+
         // Happix ajoutés
         for (Map.Entry<String, HappixAccount> entry : newMap.entrySet()) {
             if (!oldMap.containsKey(entry.getKey())) {
                 HappixAccount h = entry.getValue();
-                changes.add(new ChangeDetail("HAPPIX", "ADDED", 
-                        "Compte Happix", null, h.getNom()));
+                changes.add(new ChangeDetail(ChangeDetail.CATEGORY_HAPPIX, ChangeDetail.CHANGE_TYPE_ADDED,
+                        ChangeDetail.LABEL_COMPTE_HAPPIX, null, h.getNom()));
             }
         }
-        
+
         // Happix modifiés
+        addHappixModifiedChanges(changes, oldMap, newMap);
+    }
+
+    private void addHappixModifiedChanges(List<ChangeDetail> changes, Map<String, HappixAccount> oldMap, Map<String, HappixAccount> newMap) {
         for (Map.Entry<String, HappixAccount> entry : newMap.entrySet()) {
-            if (oldMap.containsKey(entry.getKey())) {
-                HappixAccount oldH = oldMap.get(entry.getKey());
-                HappixAccount newH = entry.getValue();
-                
-                if (!Objects.equals(normalizeValue(oldH.getMobile()), normalizeValue(newH.getMobile()))) {
-                    changes.add(new ChangeDetail("HAPPIX", "MODIFIED", 
-                            "Tél. Happix de " + newH.getNom(), 
-                            oldH.getMobile(), newH.getMobile()));
-                }
-                if (!Objects.equals(normalizeValue(oldH.getEmail()), normalizeValue(newH.getEmail()))) {
-                    changes.add(new ChangeDetail("HAPPIX", "MODIFIED", 
-                            "Email Happix de " + newH.getNom(), 
-                            oldH.getEmail(), newH.getEmail()));
-                }
-                if (!Objects.equals(normalizeValue(oldH.getType()), normalizeValue(newH.getType()))) {
-                    changes.add(new ChangeDetail("HAPPIX", "MODIFIED", 
-                            "Type Happix de " + newH.getNom(), 
-                            oldH.getType(), newH.getType()));
-                }
-                if (!Objects.equals(normalizeValue(oldH.getRelation()), normalizeValue(newH.getRelation()))) {
-                    changes.add(new ChangeDetail("HAPPIX", "MODIFIED", 
-                            "Relation Happix de " + newH.getNom(), 
-                            oldH.getRelation(), newH.getRelation()));
-                }
-                if (!Objects.equals(normalizeValue(oldH.getNomBorne()), normalizeValue(newH.getNomBorne()))) {
-                    changes.add(new ChangeDetail("HAPPIX", "MODIFIED", 
-                            "Nom borne de " + newH.getNom(), 
-                            oldH.getNomBorne(), newH.getNomBorne()));
-                }
+            if (!oldMap.containsKey(entry.getKey())) continue;
+            HappixAccount oldH = oldMap.get(entry.getKey());
+            HappixAccount newH = entry.getValue();
+            addHappixFieldChange(changes, newH, "Tél. Happix de ", oldH.getMobile(), newH.getMobile());
+            addHappixFieldChange(changes, newH, "Email Happix de ", oldH.getEmail(), newH.getEmail());
+            addHappixFieldChange(changes, newH, "Type Happix de ", oldH.getType(), newH.getType());
+            addHappixFieldChange(changes, newH, "Relation Happix de ", oldH.getRelation(), newH.getRelation());
+            if (!Objects.equals(normalizeValue(oldH.getNomBorne()), normalizeValue(newH.getNomBorne()))) {
+                changes.add(new ChangeDetail(ChangeDetail.CATEGORY_HAPPIX, ChangeDetail.CHANGE_TYPE_MODIFIED,
+                        "Nom borne de " + newH.getNom(), oldH.getNomBorne(), newH.getNomBorne()));
             }
         }
+    }
+
+    private void addHappixFieldChange(List<ChangeDetail> changes, HappixAccount newH, String labelPrefix, String oldVal, String newVal) {
+        if (Objects.equals(normalizeValue(oldVal), normalizeValue(newVal))) return;
+        changes.add(new ChangeDetail(ChangeDetail.CATEGORY_HAPPIX, ChangeDetail.CHANGE_TYPE_MODIFIED,
+                labelPrefix + newH.getNom(), oldVal, newVal));
     }
     
     // ==================== UTILITAIRES ====================
@@ -267,28 +257,32 @@ public class ResidentHistoryService {
      * Génère une description lisible à partir de la liste des changements
      */
     private String buildDescription(List<ChangeDetail> changes) {
+        long modifiedFields = countChanges(changes, null, ChangeDetail.CHANGE_TYPE_MODIFIED,
+                c -> !ChangeDetail.CATEGORY_OCCUPANT.equals(c.getCategory()) && !ChangeDetail.CATEGORY_HAPPIX.equals(c.getCategory()));
+        long addedOccupants = countChanges(changes, ChangeDetail.CATEGORY_OCCUPANT, ChangeDetail.CHANGE_TYPE_ADDED, null);
+        long removedOccupants = countChanges(changes, ChangeDetail.CATEGORY_OCCUPANT, ChangeDetail.CHANGE_TYPE_REMOVED, null);
+        long modifiedOccupants = countChanges(changes, ChangeDetail.CATEGORY_OCCUPANT, ChangeDetail.CHANGE_TYPE_MODIFIED, null);
+        long addedHappix = countChanges(changes, ChangeDetail.CATEGORY_HAPPIX, ChangeDetail.CHANGE_TYPE_ADDED, null);
+        long removedHappix = countChanges(changes, ChangeDetail.CATEGORY_HAPPIX, ChangeDetail.CHANGE_TYPE_REMOVED, null);
+        long modifiedHappix = countChanges(changes, ChangeDetail.CATEGORY_HAPPIX, ChangeDetail.CHANGE_TYPE_MODIFIED, null);
+
         List<String> parts = new ArrayList<>();
-        
-        long modifiedFields = changes.stream().filter(c -> "MODIFIED".equals(c.getChangeType()) 
-                && !"OCCUPANT".equals(c.getCategory()) && !"HAPPIX".equals(c.getCategory())).count();
-        long addedOccupants = changes.stream().filter(c -> "OCCUPANT".equals(c.getCategory()) && "ADDED".equals(c.getChangeType())).count();
-        long removedOccupants = changes.stream().filter(c -> "OCCUPANT".equals(c.getCategory()) && "REMOVED".equals(c.getChangeType())).count();
-        long modifiedOccupants = changes.stream().filter(c -> "OCCUPANT".equals(c.getCategory()) && "MODIFIED".equals(c.getChangeType())).count();
-        long addedHappix = changes.stream().filter(c -> "HAPPIX".equals(c.getCategory()) && "ADDED".equals(c.getChangeType())).count();
-        long removedHappix = changes.stream().filter(c -> "HAPPIX".equals(c.getCategory()) && "REMOVED".equals(c.getChangeType())).count();
-        long modifiedHappix = changes.stream().filter(c -> "HAPPIX".equals(c.getCategory()) && "MODIFIED".equals(c.getChangeType())).count();
-        
-        if (modifiedFields > 0) {
-            parts.add("Modification de " + modifiedFields + " champ" + (modifiedFields > 1 ? "s" : ""));
-        }
+        if (modifiedFields > 0) parts.add("Modification de " + modifiedFields + " champ" + (modifiedFields > 1 ? "s" : ""));
         if (addedOccupants > 0) parts.add("Ajout de " + addedOccupants + " occupant" + (addedOccupants > 1 ? "s" : ""));
         if (removedOccupants > 0) parts.add("Suppression de " + removedOccupants + " occupant" + (removedOccupants > 1 ? "s" : ""));
         if (modifiedOccupants > 0) parts.add("Modification d'occupant" + (modifiedOccupants > 1 ? "s" : ""));
         if (addedHappix > 0) parts.add("Ajout de " + addedHappix + " compte" + (addedHappix > 1 ? "s" : "") + " Happix");
         if (removedHappix > 0) parts.add("Suppression de " + removedHappix + " compte" + (removedHappix > 1 ? "s" : "") + " Happix");
         if (modifiedHappix > 0) parts.add("Modification de compte" + (modifiedHappix > 1 ? "s" : "") + " Happix");
-        
+
         return String.join(", ", parts);
+    }
+
+    private long countChanges(List<ChangeDetail> changes, String category, String changeType, java.util.function.Predicate<ChangeDetail> extraFilter) {
+        return changes.stream()
+                .filter(c -> (category == null || category.equals(c.getCategory())) && changeType.equals(c.getChangeType()))
+                .filter(c -> extraFilter == null || extraFilter.test(c))
+                .count();
     }
     
     private String formatLotSummary(Resident resident) {

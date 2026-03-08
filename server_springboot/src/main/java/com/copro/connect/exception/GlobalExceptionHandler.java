@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -77,6 +76,17 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
     }
 
+    @ExceptionHandler(EmailSendException.class)
+    public ResponseEntity<ErrorResponse> handleEmailSend(EmailSendException ex, WebRequest request) {
+        log.error("Email send failure: {}", ex.getMessage(), ex);
+        ErrorResponse error = new ErrorResponse(
+                ex.getMessage(),
+                HttpStatus.SERVICE_UNAVAILABLE.value(),
+                request.getDescription(false).replace("uri=", "")
+        );
+        return new ResponseEntity<>(error, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<ErrorResponse> handleValidation(ValidationException ex, WebRequest request) {
         log.warn("Validation error: {}", ex.getMessage());
@@ -91,10 +101,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
+        ex.getBindingResult().getFieldErrors().forEach(error -> {
+            errors.put(error.getField(), error.getDefaultMessage());
         });
         
         log.warn("Validation errors: {}", errors);

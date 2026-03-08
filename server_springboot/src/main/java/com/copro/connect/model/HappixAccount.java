@@ -31,7 +31,8 @@ public class HappixAccount {
     private String nomBorne;
     
     @Pattern(regexp = "^(resident|autorisé)?$", 
-             message = "Le type doit être: resident ou autorisé")
+             message = "Le type doit être: resident ou autorisé",
+             flags = Pattern.Flag.CANON_EQ)
     private String type;
     
     @Size(max = 50, message = "La relation ne peut pas dépasser 50 caractères")

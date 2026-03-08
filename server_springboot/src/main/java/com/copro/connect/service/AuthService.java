@@ -8,6 +8,7 @@ import com.copro.connect.model.User;
 import com.copro.connect.repository.UserRepository;
 import com.copro.connect.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -42,7 +43,7 @@ public class AuthService {
         );
 
         User user = userRepository.findByUsername(loginRequest.getUsername())
-                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur introuvable"));
 
         // Si MFA activé et email configuré -> envoyer le code
         if (user.isMfaEnabled() && user.getEmail() != null && !user.getEmail().isBlank()) {
@@ -72,7 +73,7 @@ public class AuthService {
         }
 
         User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur introuvable"));
 
         String jwt = jwtUtils.generateToken(user.getUsername());
 

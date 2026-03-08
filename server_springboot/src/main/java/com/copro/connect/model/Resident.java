@@ -52,7 +52,8 @@ public class Resident {
     private String caveId;
     
     @Pattern(regexp = "^(Propriétaire Résident|Propriétaire Bailleur)?$", 
-             message = "Le statut doit être: Propriétaire Résident ou Propriétaire Bailleur")
+             message = "Le statut doit être: Propriétaire Résident ou Propriétaire Bailleur",
+             flags = Pattern.Flag.CANON_EQ)
     @JsonProperty("statut_lot")
     private String statutLot;
     
