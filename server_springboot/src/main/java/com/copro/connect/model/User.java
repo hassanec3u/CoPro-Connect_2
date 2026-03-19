@@ -30,17 +30,17 @@ public class User implements UserDetails {
     @JsonProperty("id")
     private String id;
     
-    @NotBlank(message = "Le nom d'utilisateur est obligatoire")
+    @NotBlank(message = "Username is required")
     @Indexed(unique = true)
     private String username;
-    
-    @NotBlank(message = "Le mot de passe est obligatoire")
+
+    @NotBlank(message = "Password is required")
     @JsonIgnore
     private String password;
-    
+
     private String name;
-    
-    @Email(message = "L'adresse email n'est pas valide")
+
+    @Email(message = "Email address is not valid")
     private String email;
     
     private String role;
@@ -55,7 +55,7 @@ public class User implements UserDetails {
     @JsonProperty("updatedAt")
     private Instant updatedAt;
     
-    // Implémentation de UserDetails pour Spring Security
+    // UserDetails implementation for Spring Security
     
     @Override
     @JsonIgnore

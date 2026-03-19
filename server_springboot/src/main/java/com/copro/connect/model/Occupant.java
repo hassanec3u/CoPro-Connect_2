@@ -13,15 +13,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Occupant {
     
-    @NotBlank(message = "Le nom de l'occupant est obligatoire")
-    @Size(min = 2, max = 100, message = "Le nom de l'occupant doit contenir entre 2 et 100 caractères")
+    @NotBlank(message = "Occupant name is required")
+    @Size(min = 2, max = 100, message = "Occupant name must be between 2 and 100 characters")
     private String nom;
-    
-    @Pattern(regexp = "^(\\+?[0-9\\s.-]{10,20})?$", 
-             message = "Le numéro de téléphone de l'occupant n'est pas valide")
+
+    @Pattern(regexp = "^(\\+?[0-9\\s.-]{10,20})?$",
+             message = "Occupant phone number is not valid")
     private String mobile;
-    
-    @Email(message = "L'adresse email de l'occupant n'est pas valide")
-    @Size(max = 100, message = "L'email de l'occupant ne peut pas dépasser 100 caractères")
+
+    @Email(message = "Occupant email address is not valid")
+    @Size(max = 100, message = "Occupant email cannot exceed 100 characters")
     private String email;
 }

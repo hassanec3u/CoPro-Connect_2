@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MfaVerifyRequest {
 
-    @NotBlank(message = "Le nom d'utilisateur est obligatoire")
+    @NotBlank(message = "Username is required")
     private String username;
 
-    @NotBlank(message = "Le code de vérification est obligatoire")
+    @NotBlank(message = "Verification code is required")
     private String code;
 }

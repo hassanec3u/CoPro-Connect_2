@@ -32,20 +32,20 @@ public class MfaService {
     private int expirationMinutes;
 
     /**
-     * Génère et envoie un code MFA par email
+     * Generates and sends an MFA code by email
      */
     public void generateAndSendCode(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (user.getEmail() == null || user.getEmail().isBlank()) {
-            throw new RuntimeException("Aucune adresse email configurée pour cet utilisateur");
+            throw new RuntimeException("No email address configured for this user");
         }
 
-        // Supprimer les anciens codes non utilisés
+        // Delete old unused codes
         mfaCodeRepository.deleteAllByUsername(username);
 
-        // Générer un nouveau code
+        // Generate a new code
         String code = generateNumericCode();
 
         MfaCode mfaCode = new MfaCode();
@@ -58,15 +58,15 @@ public class MfaService {
 
         mfaCodeRepository.save(mfaCode);
 
-        // Envoyer le code par email
+        // Send the code by email
         emailService.sendMfaCode(user.getEmail(), code, user.getName() != null ? user.getName() : username);
 
         log.info("MFA code generated and sent for user: {}", username);
     }
 
     /**
-     * Vérifie le code MFA
-     * @return true si le code est valide
+     * Verifies the MFA code
+     * @return true if the code is valid
      */
     public boolean verifyCode(String username, String code) {
         MfaCode mfaCode = mfaCodeRepository
@@ -78,7 +78,7 @@ public class MfaService {
             return false;
         }
 
-        // Vérifier expiration
+        // Check expiration
         if (Instant.now().isAfter(mfaCode.getExpiresAt())) {
             log.warn("MFA code expired for user: {}", username);
             mfaCode.setUsed(true);
@@ -86,7 +86,7 @@ public class MfaService {
             return false;
         }
 
-        // Vérifier nombre de tentatives
+        // Check number of attempts
         if (mfaCode.getAttempts() >= MAX_ATTEMPTS) {
             log.warn("Too many MFA attempts for user: {}", username);
             mfaCode.setUsed(true);
@@ -94,10 +94,10 @@ public class MfaService {
             return false;
         }
 
-        // Incrémenter les tentatives
+        // Increment attempts
         mfaCode.setAttempts(mfaCode.getAttempts() + 1);
 
-        // Vérifier le code
+        // Verify the code
         if (mfaCode.getCode().equals(code.trim())) {
             mfaCode.setUsed(true);
             mfaCodeRepository.save(mfaCode);
@@ -111,7 +111,7 @@ public class MfaService {
     }
 
     /**
-     * Masque l'email pour l'affichage frontend (ex: ad***@gmail.com)
+     * Masks the email for frontend display (e.g. ad***@gmail.com)
      */
     public String getMaskedEmail(String username) {
         return userRepository.findByUsername(username)

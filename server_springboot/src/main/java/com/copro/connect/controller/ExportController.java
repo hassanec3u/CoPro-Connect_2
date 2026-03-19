@@ -20,7 +20,7 @@ public class ExportController {
 
     @GetMapping("/residents/pdf")
     public ResponseEntity<byte[]> exportResidentsPdf() {
-        log.info("Export PDF résidents demandé");
+        log.info("Residents PDF export requested");
         byte[] pdf = pdfExportService.exportResidentsPdf();
 
         return ResponseEntity.ok()
@@ -32,7 +32,7 @@ public class ExportController {
 
     @GetMapping("/happix/pdf")
     public ResponseEntity<byte[]> exportHappixPdf() {
-        log.info("Export PDF Happix demandé");
+        log.info("Happix PDF export requested");
         byte[] pdf = pdfExportService.exportHappixPdf();
 
         return ResponseEntity.ok()

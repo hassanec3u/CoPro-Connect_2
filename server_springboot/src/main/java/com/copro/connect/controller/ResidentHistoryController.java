@@ -22,7 +22,7 @@ public class ResidentHistoryController {
     private final ResidentHistoryService residentHistoryService;
     
     /**
-     * Récupère l'historique d'un appartement
+     * Retrieves the history for an apartment
      */
     @GetMapping("/apartment")
     public ResponseEntity<List<ResidentHistoryResponse>> getApartmentHistory(
@@ -41,7 +41,7 @@ public class ResidentHistoryController {
     }
     
     /**
-     * Récupère l'historique d'un résident spécifique
+     * Retrieves the history for a specific resident
      */
     @GetMapping("/resident/{residentId}")
     public ResponseEntity<List<ResidentHistoryResponse>> getResidentHistory(

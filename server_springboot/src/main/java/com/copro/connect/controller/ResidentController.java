@@ -42,9 +42,9 @@ public class ResidentController {
         log.info("GET /api/residents - page: {}, size: {}, search: {}, batiment: {}, statut: {}, sort: {}", 
                  page, size, search, batiment, statutLot, sort);
         
-        // Validation supplémentaire
+        // Additional validation
         if (size > 100) {
-            throw new ValidationException("La taille de la page ne peut pas dépasser 100");
+            throw new ValidationException("Page size cannot exceed 100");
         }
         
         PagedResidentsResponse response = residentService.getResidentsPaginated(page, size, search, batiment, statutLot, sort);
@@ -69,31 +69,31 @@ public class ResidentController {
     public ResponseEntity<Resident> getResidentById(@PathVariable String id) {
         log.info("GET /api/residents/{} - Fetching resident by id", id);
         
-        // Validation au niveau API
+        // API-level validation
         residentValidator.validateId(id);
-        
+
         Resident resident = residentService.getResidentById(id);
         return ResponseEntity.ok(resident);
     }
-    
+
     @PostMapping
     public ResponseEntity<Resident> createResident(@Valid @RequestBody Resident resident) {
         log.info("POST /api/residents - Creating new resident");
-        
-        // Validation métier au niveau API
+
+        // Business validation at API level
         residentValidator.validateForCreation(resident);
-        
+
         Resident createdResident = residentService.createResident(resident);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdResident);
     }
-    
+
     @PutMapping("/{id}")
     public ResponseEntity<Resident> updateResident(
             @PathVariable String id,
             @Valid @RequestBody Resident residentDetails) {
         log.info("PUT /api/residents/{} - Updating resident", id);
-        
-        // Validation métier au niveau API
+
+        // Business validation at API level
         residentValidator.validateForUpdate(id, residentDetails);
         
         Resident updatedResident = residentService.updateResident(id, residentDetails);
@@ -104,13 +104,13 @@ public class ResidentController {
     public ResponseEntity<Map<String, String>> deleteResident(@PathVariable String id) {
         log.info("DELETE /api/residents/{} - Deleting resident", id);
         
-        // Validation au niveau API
+        // API-level validation
         residentValidator.validateId(id);
-        
+
         residentService.deleteResident(id);
         
         Map<String, String> response = new HashMap<>();
-        response.put("message", "Résident supprimé avec succès");
+        response.put("message", "Resident successfully deleted");
         
         return ResponseEntity.ok(response);
     }

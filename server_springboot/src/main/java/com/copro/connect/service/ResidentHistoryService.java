@@ -18,7 +18,7 @@ public class ResidentHistoryService {
     private final ResidentHistoryRepository residentHistoryRepository;
     
     /**
-     * Enregistre l'historique lors d'une modification en détectant les changements précis
+     * Records history during an update by detecting precise changes
      */
     @Transactional
     public void recordUpdate(Resident oldResident, Resident newResident) {
@@ -49,7 +49,7 @@ public class ResidentHistoryService {
     }
     
     /**
-     * Enregistre l'historique lors d'une suppression
+     * Records history during a deletion
      */
     @Transactional
     public void recordDelete(Resident resident) {
@@ -63,7 +63,7 @@ public class ResidentHistoryService {
 
         if (resident.getProprietaireNom() != null) {
             changes.add(new ChangeDetail(ChangeDetail.CATEGORY_PROPRIETAIRE, ChangeDetail.CHANGE_TYPE_REMOVED,
-                    "Propriétaire", resident.getProprietaireNom(), null));
+                    "Owner", resident.getProprietaireNom(), null));
         }
 
         List<Occupant> occupants = resident.getOccupants() != null ? resident.getOccupants() : Collections.emptyList();
@@ -78,8 +78,8 @@ public class ResidentHistoryService {
                     ChangeDetail.LABEL_COMPTE_HAPPIX, h.getNom(), null));
         }
         
-        String description = "Suppression du lot " + resident.getLotId() 
-                + " (Bât. " + resident.getBatiment() + ", Appt " + resident.getPorte() + ")";
+        String description = "Deletion of lot " + resident.getLotId()
+                + " (Bldg. " + resident.getBatiment() + ", Apt " + resident.getPorte() + ")";
         
         ResidentHistory history = new ResidentHistory();
         history.setResidentId(resident.getId());
@@ -107,30 +107,30 @@ public class ResidentHistoryService {
         return residentHistoryRepository.findByResidentIdOrderByChangedAtDesc(residentId);
     }
     
-    // ==================== DETECTION DES CHANGEMENTS ====================
+    // ==================== CHANGE DETECTION ====================
     
     private List<ChangeDetail> detectChanges(Resident oldR, Resident newR) {
         List<ChangeDetail> changes = new ArrayList<>();
         
-        // Champs du lot
-        compareField(changes, ChangeDetail.CATEGORY_LOT, "Numéro de lot", oldR.getLotId(), newR.getLotId());
-        compareField(changes, ChangeDetail.CATEGORY_LOT, "Bâtiment", oldR.getBatiment(), newR.getBatiment());
-        compareField(changes, ChangeDetail.CATEGORY_LOT, "Étage", oldR.getEtage(), newR.getEtage());
-        compareField(changes, ChangeDetail.CATEGORY_LOT, "Appartement", oldR.getPorte(), newR.getPorte());
-        compareField(changes, ChangeDetail.CATEGORY_LOT, "Cave", oldR.getCaveId(), newR.getCaveId());
-        compareField(changes, ChangeDetail.CATEGORY_LOT, "Statut", oldR.getStatutLot(), newR.getStatutLot());
+        // Lot fields
+        compareField(changes, ChangeDetail.CATEGORY_LOT, "Lot number", oldR.getLotId(), newR.getLotId());
+        compareField(changes, ChangeDetail.CATEGORY_LOT, "Building", oldR.getBatiment(), newR.getBatiment());
+        compareField(changes, ChangeDetail.CATEGORY_LOT, "Floor", oldR.getEtage(), newR.getEtage());
+        compareField(changes, ChangeDetail.CATEGORY_LOT, "Apartment", oldR.getPorte(), newR.getPorte());
+        compareField(changes, ChangeDetail.CATEGORY_LOT, "Storage room", oldR.getCaveId(), newR.getCaveId());
+        compareField(changes, ChangeDetail.CATEGORY_LOT, "Status", oldR.getStatutLot(), newR.getStatutLot());
 
-        // Champs du propriétaire
-        compareField(changes, ChangeDetail.CATEGORY_PROPRIETAIRE, "Nom du propriétaire", oldR.getProprietaireNom(), newR.getProprietaireNom());
-        compareField(changes, ChangeDetail.CATEGORY_PROPRIETAIRE, "Téléphone du propriétaire", oldR.getProprietaireMobile(), newR.getProprietaireMobile());
-        compareField(changes, ChangeDetail.CATEGORY_PROPRIETAIRE, "Email du propriétaire", oldR.getProprietaireEmail(), newR.getProprietaireEmail());
-        
+        // Owner fields
+        compareField(changes, ChangeDetail.CATEGORY_PROPRIETAIRE, "Owner name", oldR.getProprietaireNom(), newR.getProprietaireNom());
+        compareField(changes, ChangeDetail.CATEGORY_PROPRIETAIRE, "Owner phone", oldR.getProprietaireMobile(), newR.getProprietaireMobile());
+        compareField(changes, ChangeDetail.CATEGORY_PROPRIETAIRE, "Owner email", oldR.getProprietaireEmail(), newR.getProprietaireEmail());
+
         // Occupants
         detectOccupantChanges(changes, 
                 oldR.getOccupants() != null ? oldR.getOccupants() : Collections.emptyList(),
                 newR.getOccupants() != null ? newR.getOccupants() : Collections.emptyList());
         
-        // Comptes Happix
+        // Happix accounts
         detectHappixChanges(changes,
                 oldR.getHappixAccounts() != null ? oldR.getHappixAccounts() : Collections.emptyList(),
                 newR.getHappixAccounts() != null ? newR.getHappixAccounts() : Collections.emptyList());
@@ -148,7 +148,7 @@ public class ResidentHistoryService {
     }
     
     private void detectOccupantChanges(List<ChangeDetail> changes, List<Occupant> oldList, List<Occupant> newList) {
-        // Indexer les occupants par nom pour la comparaison
+        // Index occupants by name for comparison
         Map<String, Occupant> oldMap = new LinkedHashMap<>();
         for (Occupant o : oldList) {
             if (o.getNom() != null) oldMap.put(o.getNom().trim().toLowerCase(), o);
@@ -159,7 +159,7 @@ public class ResidentHistoryService {
             if (o.getNom() != null) newMap.put(o.getNom().trim().toLowerCase(), o);
         }
         
-        // Occupants supprimés
+        // Removed occupants
         for (Map.Entry<String, Occupant> entry : oldMap.entrySet()) {
             if (!newMap.containsKey(entry.getKey())) {
                 changes.add(new ChangeDetail(ChangeDetail.CATEGORY_OCCUPANT, ChangeDetail.CHANGE_TYPE_REMOVED,
@@ -167,7 +167,7 @@ public class ResidentHistoryService {
             }
         }
 
-        // Occupants ajoutés
+        // Added occupants
         for (Map.Entry<String, Occupant> entry : newMap.entrySet()) {
             if (!oldMap.containsKey(entry.getKey())) {
                 changes.add(new ChangeDetail(ChangeDetail.CATEGORY_OCCUPANT, ChangeDetail.CHANGE_TYPE_ADDED,
@@ -175,7 +175,7 @@ public class ResidentHistoryService {
             }
         }
 
-        // Occupants modifiés (même nom, données différentes)
+        // Modified occupants (same name, different data)
         addOccupantModifiedChanges(changes, oldMap, newMap);
     }
 
@@ -186,17 +186,17 @@ public class ResidentHistoryService {
             Occupant newOcc = entry.getValue();
             if (!Objects.equals(normalizeValue(oldOcc.getMobile()), normalizeValue(newOcc.getMobile()))) {
                 changes.add(new ChangeDetail(ChangeDetail.CATEGORY_OCCUPANT, ChangeDetail.CHANGE_TYPE_MODIFIED,
-                        "Tél. de " + newOcc.getNom(), oldOcc.getMobile(), newOcc.getMobile()));
+                        "Phone of " + newOcc.getNom(), oldOcc.getMobile(), newOcc.getMobile()));
             }
             if (!Objects.equals(normalizeValue(oldOcc.getEmail()), normalizeValue(newOcc.getEmail()))) {
                 changes.add(new ChangeDetail(ChangeDetail.CATEGORY_OCCUPANT, ChangeDetail.CHANGE_TYPE_MODIFIED,
-                        "Email de " + newOcc.getNom(), oldOcc.getEmail(), newOcc.getEmail()));
+                        "Email of " + newOcc.getNom(), oldOcc.getEmail(), newOcc.getEmail()));
             }
         }
     }
     
     private void detectHappixChanges(List<ChangeDetail> changes, List<HappixAccount> oldList, List<HappixAccount> newList) {
-        // Indexer par nom pour la comparaison
+        // Index by name for comparison
         Map<String, HappixAccount> oldMap = new LinkedHashMap<>();
         for (HappixAccount h : oldList) {
             if (h.getNom() != null) oldMap.put(h.getNom().trim().toLowerCase(), h);
@@ -207,7 +207,7 @@ public class ResidentHistoryService {
             if (h.getNom() != null) newMap.put(h.getNom().trim().toLowerCase(), h);
         }
         
-        // Happix supprimés
+        // Removed Happix
         for (Map.Entry<String, HappixAccount> entry : oldMap.entrySet()) {
             if (!newMap.containsKey(entry.getKey())) {
                 HappixAccount h = entry.getValue();
@@ -216,7 +216,7 @@ public class ResidentHistoryService {
             }
         }
 
-        // Happix ajoutés
+        // Added Happix
         for (Map.Entry<String, HappixAccount> entry : newMap.entrySet()) {
             if (!oldMap.containsKey(entry.getKey())) {
                 HappixAccount h = entry.getValue();
@@ -225,7 +225,7 @@ public class ResidentHistoryService {
             }
         }
 
-        // Happix modifiés
+        // Modified Happix
         addHappixModifiedChanges(changes, oldMap, newMap);
     }
 
@@ -234,13 +234,13 @@ public class ResidentHistoryService {
             if (!oldMap.containsKey(entry.getKey())) continue;
             HappixAccount oldH = oldMap.get(entry.getKey());
             HappixAccount newH = entry.getValue();
-            addHappixFieldChange(changes, newH, "Tél. Happix de ", oldH.getMobile(), newH.getMobile());
-            addHappixFieldChange(changes, newH, "Email Happix de ", oldH.getEmail(), newH.getEmail());
-            addHappixFieldChange(changes, newH, "Type Happix de ", oldH.getType(), newH.getType());
-            addHappixFieldChange(changes, newH, "Relation Happix de ", oldH.getRelation(), newH.getRelation());
+            addHappixFieldChange(changes, newH, "Happix phone of ", oldH.getMobile(), newH.getMobile());
+            addHappixFieldChange(changes, newH, "Happix email of ", oldH.getEmail(), newH.getEmail());
+            addHappixFieldChange(changes, newH, "Happix type of ", oldH.getType(), newH.getType());
+            addHappixFieldChange(changes, newH, "Happix relationship of ", oldH.getRelation(), newH.getRelation());
             if (!Objects.equals(normalizeValue(oldH.getNomBorne()), normalizeValue(newH.getNomBorne()))) {
                 changes.add(new ChangeDetail(ChangeDetail.CATEGORY_HAPPIX, ChangeDetail.CHANGE_TYPE_MODIFIED,
-                        "Nom borne de " + newH.getNom(), oldH.getNomBorne(), newH.getNomBorne()));
+                        "Terminal name of " + newH.getNom(), oldH.getNomBorne(), newH.getNomBorne()));
             }
         }
     }
@@ -251,10 +251,10 @@ public class ResidentHistoryService {
                 labelPrefix + newH.getNom(), oldVal, newVal));
     }
     
-    // ==================== UTILITAIRES ====================
-    
+    // ==================== UTILITIES ====================
+
     /**
-     * Génère une description lisible à partir de la liste des changements
+     * Generates a human-readable description from the list of changes
      */
     private String buildDescription(List<ChangeDetail> changes) {
         long modifiedFields = countChanges(changes, null, ChangeDetail.CHANGE_TYPE_MODIFIED,
@@ -267,13 +267,13 @@ public class ResidentHistoryService {
         long modifiedHappix = countChanges(changes, ChangeDetail.CATEGORY_HAPPIX, ChangeDetail.CHANGE_TYPE_MODIFIED, null);
 
         List<String> parts = new ArrayList<>();
-        if (modifiedFields > 0) parts.add("Modification de " + modifiedFields + " champ" + (modifiedFields > 1 ? "s" : ""));
-        if (addedOccupants > 0) parts.add("Ajout de " + addedOccupants + " occupant" + (addedOccupants > 1 ? "s" : ""));
-        if (removedOccupants > 0) parts.add("Suppression de " + removedOccupants + " occupant" + (removedOccupants > 1 ? "s" : ""));
-        if (modifiedOccupants > 0) parts.add("Modification d'occupant" + (modifiedOccupants > 1 ? "s" : ""));
-        if (addedHappix > 0) parts.add("Ajout de " + addedHappix + " compte" + (addedHappix > 1 ? "s" : "") + " Happix");
-        if (removedHappix > 0) parts.add("Suppression de " + removedHappix + " compte" + (removedHappix > 1 ? "s" : "") + " Happix");
-        if (modifiedHappix > 0) parts.add("Modification de compte" + (modifiedHappix > 1 ? "s" : "") + " Happix");
+        if (modifiedFields > 0) parts.add(modifiedFields + " field" + (modifiedFields > 1 ? "s" : "") + " modified");
+        if (addedOccupants > 0) parts.add(addedOccupants + " occupant" + (addedOccupants > 1 ? "s" : "") + " added");
+        if (removedOccupants > 0) parts.add(removedOccupants + " occupant" + (removedOccupants > 1 ? "s" : "") + " removed");
+        if (modifiedOccupants > 0) parts.add("occupant" + (modifiedOccupants > 1 ? "s" : "") + " modified");
+        if (addedHappix > 0) parts.add(addedHappix + " Happix account" + (addedHappix > 1 ? "s" : "") + " added");
+        if (removedHappix > 0) parts.add(removedHappix + " Happix account" + (removedHappix > 1 ? "s" : "") + " removed");
+        if (modifiedHappix > 0) parts.add("Happix account" + (modifiedHappix > 1 ? "s" : "") + " modified");
 
         return String.join(", ", parts);
     }
@@ -286,8 +286,8 @@ public class ResidentHistoryService {
     }
     
     private String formatLotSummary(Resident resident) {
-        return "Bât. " + resident.getBatiment() + ", Étage " + resident.getEtage() 
-                + ", Appt " + resident.getPorte();
+        return "Bldg. " + resident.getBatiment() + ", Floor " + resident.getEtage()
+                + ", Apt " + resident.getPorte();
     }
     
     private String normalizeValue(String value) {

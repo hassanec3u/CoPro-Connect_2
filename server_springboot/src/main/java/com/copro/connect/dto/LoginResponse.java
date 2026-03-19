@@ -25,7 +25,7 @@ public class LoginResponse {
     private String message;
 
     /**
-     * Réponse classique (login complet, pas de MFA)
+     * Standard response (full login, no MFA)
      */
     public static LoginResponse success(String token, User user) {
         LoginResponse response = new LoginResponse();
@@ -36,13 +36,13 @@ public class LoginResponse {
     }
 
     /**
-     * Réponse MFA requise (pas de token encore)
+     * MFA required response (no token yet)
      */
     public static LoginResponse mfaRequired(String maskedEmail) {
         LoginResponse response = new LoginResponse();
         response.setMfaRequired(true);
         response.setMaskedEmail(maskedEmail);
-        response.setMessage("Un code de vérification a été envoyé à votre adresse email.");
+        response.setMessage("A verification code has been sent to your email address.");
         return response;
     }
 

@@ -41,12 +41,12 @@ public class ResidentHistory {
     private String actionType; // "UPDATE", "DELETE"
     
     /**
-     * Description lisible de l'action (ex: "Modification du propriétaire, Suppression d'un compte Happix")
+     * Human-readable action description (e.g. "Owner modification, Happix account removal")
      */
     private String description;
-    
+
     /**
-     * Liste des changements détaillés
+     * List of detailed changes
      */
     private List<ChangeDetail> changes = new ArrayList<>();
     

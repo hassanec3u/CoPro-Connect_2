@@ -33,10 +33,10 @@ public class ResidentRepositoryCustomImpl implements ResidentRepositoryCustom {
         Query query = new Query();
         List<Criteria> criteria = new ArrayList<>();
         
-        // Filtre de recherche (si fourni)
+        // Search filter (if provided)
         if (search != null && !search.trim().isEmpty()) {
             String searchTerm = search.trim();
-            // Échapper les caractères spéciaux regex et faire une recherche "contient"
+            // Escape special regex characters and perform a "contains" search
             String escapedTerm = Pattern.quote(searchTerm);
             Pattern pattern = Pattern.compile(".*" + escapedTerm + ".*", Pattern.CASE_INSENSITIVE);
             
@@ -49,28 +49,28 @@ public class ResidentRepositoryCustomImpl implements ResidentRepositoryCustom {
             ));
         }
         
-        // Filtre par bâtiment (si fourni)
+        // Building filter (if provided)
         if (batiment != null && !batiment.trim().isEmpty()) {
             criteria.add(Criteria.where("batiment").is(batiment));
         }
-        
-        // Filtre par statut (si fourni)
+
+        // Status filter (if provided)
         if (statutLot != null && !statutLot.trim().isEmpty()) {
             criteria.add(Criteria.where("statutLot").is(statutLot));
         }
-        
-        // Combiner tous les critères
+
+        // Combine all criteria
         if (!criteria.isEmpty()) {
             query.addCriteria(new Criteria().andOperator(criteria.toArray(new Criteria[0])));
         }
         
-        // Créer un Pageable avec tri (du Pageable si présent, sinon tri par défaut)
+        // Create a Pageable with sorting (from Pageable if present, otherwise default sort)
         Pageable finalPageable;
         if (pageable.getSort().isSorted()) {
-            // Utiliser le tri du Pageable
+            // Use Pageable sorting
             finalPageable = pageable;
         } else {
-            // Tri par défaut (batiment ASC, porte ASC)
+            // Default sort (batiment ASC, porte ASC)
             finalPageable = PageRequest.of(
                 pageable.getPageNumber(),
                 pageable.getPageSize(),
@@ -81,13 +81,13 @@ public class ResidentRepositoryCustomImpl implements ResidentRepositoryCustom {
             );
         }
         
-        // Appliquer le tri et la pagination
+        // Apply sorting and pagination
         query.with(finalPageable);
-        
-        // Compter le total
+
+        // Count total
         long total = mongoTemplate.count(query, Resident.class);
-        
-        // Récupérer les résultats
+
+        // Retrieve results
         List<Resident> residents = mongoTemplate.find(query, Resident.class);
         
         return new PageImpl<>(residents, finalPageable, total);
@@ -95,10 +95,10 @@ public class ResidentRepositoryCustomImpl implements ResidentRepositoryCustom {
     
     @Override
     public StatisticsResponse calculateStatistics() {
-        // Récupérer tous les résidents
+        // Retrieve all residents
         List<Resident> allResidents = mongoTemplate.findAll(Resident.class);
-        
-        // Calcul des statistiques
+
+        // Calculate statistics
         long totalLots = allResidents.size();
         
         // Total occupants
@@ -111,50 +111,50 @@ public class ResidentRepositoryCustomImpl implements ResidentRepositoryCustom {
             .mapToLong(r -> r.getHappixAccounts() != null ? r.getHappixAccounts().size() : 0)
             .sum();
         
-        // Nombre de bâtiments uniques
+        // Number of unique buildings
         long totalBatiments = allResidents.stream()
             .map(Resident::getBatiment)
             .filter(b -> b != null && !b.isEmpty())
             .distinct()
             .count();
         
-        // Compter par statut
+        // Count by status
         Map<String, Long> statutCount = new HashMap<>();
         allResidents.forEach(r -> {
-            String statut = r.getStatutLot() != null && !r.getStatutLot().isEmpty() 
-                ? r.getStatutLot() 
-                : "Non défini";
+            String statut = r.getStatutLot() != null && !r.getStatutLot().isEmpty()
+                ? r.getStatutLot()
+                : "Undefined";
             statutCount.put(statut, statutCount.getOrDefault(statut, 0L) + 1);
         });
-        
-        // Compter par bâtiment
+
+        // Count by building
         Map<String, Long> batimentCount = new HashMap<>();
         allResidents.forEach(r -> {
-            String bat = r.getBatiment() != null && !r.getBatiment().isEmpty() 
-                ? r.getBatiment() 
-                : "Non défini";
+            String bat = r.getBatiment() != null && !r.getBatiment().isEmpty()
+                ? r.getBatiment()
+                : "Undefined";
             batimentCount.put(bat, batimentCount.getOrDefault(bat, 0L) + 1);
         });
-        
-        // Lots avec/sans occupants
+
+        // Lots with/without occupants
         long lotsAvecOccupants = allResidents.stream()
             .filter(r -> r.getOccupants() != null && !r.getOccupants().isEmpty())
             .count();
         long lotsVides = totalLots - lotsAvecOccupants;
         
-        // Moyenne occupants par lot
+        // Average occupants per lot
         double moyenneOccupants = totalLots > 0 
             ? Math.round((double) totalOccupants / totalLots * 10.0) / 10.0 
             : 0.0;
         
-        // Compter comptes Happix par type
+        // Count Happix accounts by type
         Map<String, Long> happixByType = new HashMap<>();
         allResidents.forEach(r -> {
             if (r.getHappixAccounts() != null) {
                 r.getHappixAccounts().forEach(h -> {
-                    String type = h.getType() != null && !h.getType().isEmpty() 
-                        ? h.getType() 
-                        : "Non défini";
+                    String type = h.getType() != null && !h.getType().isEmpty()
+                        ? h.getType()
+                        : "Undefined";
                     happixByType.put(type, happixByType.getOrDefault(type, 0L) + 1);
                 });
             }
@@ -180,7 +180,7 @@ public class ResidentRepositoryCustomImpl implements ResidentRepositoryCustom {
             return Optional.empty();
         }
         
-        // Créer une regex pour la recherche case-insensitive
+        // Create a regex for case-insensitive search
         Pattern pattern = Pattern.compile("^" + Pattern.quote(lotId.trim()) + "$", Pattern.CASE_INSENSITIVE);
         Query query = new Query(Criteria.where("lotId").regex(pattern));
         

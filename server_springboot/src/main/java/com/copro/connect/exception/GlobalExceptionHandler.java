@@ -108,7 +108,7 @@ public class GlobalExceptionHandler {
         log.warn("Validation errors: {}", errors);
         
         Map<String, Object> response = new HashMap<>();
-        response.put("message", "Erreur de validation");
+        response.put("message", "Validation error");
         response.put("errors", errors);
         response.put("status", HttpStatus.BAD_REQUEST.value());
         
@@ -126,7 +126,7 @@ public class GlobalExceptionHandler {
         log.warn("Constraint violation errors: {}", errors);
         
         Map<String, Object> response = new HashMap<>();
-        response.put("message", "Erreur de validation des paramètres");
+        response.put("message", "Parameter validation error");
         response.put("errors", errors);
         response.put("status", HttpStatus.BAD_REQUEST.value());
         
@@ -140,12 +140,12 @@ public class GlobalExceptionHandler {
         String message = ex.getMessage();
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         
-        if (message != null && message.contains("introuvable")) {
+        if (message != null && (message.contains("not found") || message.contains("introuvable"))) {
             status = HttpStatus.NOT_FOUND;
         }
-        
+
         ErrorResponse error = new ErrorResponse(
-                message != null ? message : "Erreur serveur",
+                message != null ? message : "Server error",
                 status.value(),
                 request.getDescription(false).replace("uri=", "")
         );
@@ -156,7 +156,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, WebRequest request) {
         log.error("Unexpected exception: ", ex);
         ErrorResponse error = new ErrorResponse(
-                "Erreur serveur interne",
+                "Internal server error",
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 request.getDescription(false).replace("uri=", "")
         );

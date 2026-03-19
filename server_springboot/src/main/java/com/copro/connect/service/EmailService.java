@@ -32,7 +32,7 @@ public class EmailService {
 
             helper.setFrom(senderEmail, senderName);
             helper.setTo(toEmail);
-            helper.setSubject("CoPro Connect — Code de vérification");
+            helper.setSubject("CoPro Connect — Verification Code");
 
             String htmlContent = buildMfaEmailHtml(code, userName);
             helper.setText(htmlContent, true);
@@ -41,7 +41,7 @@ public class EmailService {
             log.info("MFA code sent to {}", maskEmail(toEmail));
         } catch (MessagingException | java.io.UnsupportedEncodingException e) {
             log.error("Failed to send MFA email to {}", maskEmail(toEmail), e);
-            throw new EmailSendException("Impossible d'envoyer l'email de vérification", e);
+            throw new EmailSendException("Unable to send verification email", e);
         }
     }
 
@@ -56,16 +56,16 @@ public class EmailService {
                   <h1 style="color:#ffffff;margin:0;font-size:22px;">🏢 CoPro Connect</h1>
                 </div>
                 <div style="padding:32px;">
-                  <p style="color:#374151;font-size:15px;margin:0 0 8px;">Bonjour <strong>%s</strong>,</p>
-                  <p style="color:#6b7280;font-size:14px;margin:0 0 24px;">Voici votre code de vérification pour vous connecter :</p>
+                  <p style="color:#374151;font-size:15px;margin:0 0 8px;">Hello <strong>%s</strong>,</p>
+                  <p style="color:#6b7280;font-size:14px;margin:0 0 24px;">Here is your verification code to sign in:</p>
                   <div style="background:#f0f5ff;border:2px solid #2563eb;border-radius:10px;padding:20px;text-align:center;margin:0 0 24px;">
                     <span style="font-size:36px;font-weight:700;letter-spacing:8px;color:#1e40af;">%s</span>
                   </div>
-                  <p style="color:#6b7280;font-size:13px;margin:0 0 6px;">⏱ Ce code expire dans <strong>5 minutes</strong>.</p>
-                  <p style="color:#9ca3af;font-size:12px;margin:0;">Si vous n'avez pas demandé ce code, ignorez cet email.</p>
+                  <p style="color:#6b7280;font-size:13px;margin:0 0 6px;">⏱ This code expires in <strong>5 minutes</strong>.</p>
+                  <p style="color:#9ca3af;font-size:12px;margin:0;">If you did not request this code, please ignore this email.</p>
                 </div>
                 <div style="background:#f9fafb;padding:16px 32px;text-align:center;border-top:1px solid #e5e7eb;">
-                  <p style="color:#9ca3af;font-size:11px;margin:0;">CoPro Connect — Gestion de copropriété</p>
+                  <p style="color:#9ca3af;font-size:11px;margin:0;">CoPro Connect — Property Management</p>
                 </div>
               </div>
             </body>

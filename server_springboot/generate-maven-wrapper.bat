@@ -1,35 +1,35 @@
 @echo off
 echo ========================================
-echo   Generation du Maven Wrapper
+echo   Maven Wrapper Generation
 echo ========================================
 echo.
 
-REM Verifier si Maven est installe
+REM Check if Maven is installed
 mvn --version > nul 2>&1
 if %errorlevel% neq 0 (
-    echo [ERREUR] Maven n'est pas installe!
+    echo [ERROR] Maven is not installed!
     echo.
-    echo Veuillez installer Maven d'abord:
+    echo Please install Maven first:
     echo https://maven.apache.org/download.cgi
     echo.
     pause
     exit /b 1
 )
 
-echo [OK] Maven detecte
+echo [OK] Maven detected
 echo.
-echo Generation du Maven Wrapper...
+echo Generating Maven Wrapper...
 echo.
 
 mvn wrapper:wrapper
 
 if %errorlevel% equ 0 (
     echo.
-    echo [OK] Maven Wrapper genere avec succes!
-    echo Vous pouvez maintenant utiliser mvnw.cmd au lieu de mvn
+    echo [OK] Maven Wrapper generated successfully!
+    echo You can now use mvnw.cmd instead of mvn
 ) else (
     echo.
-    echo [ERREUR] Echec de la generation du wrapper
+    echo [ERROR] Wrapper generation failed
 )
 
 echo.

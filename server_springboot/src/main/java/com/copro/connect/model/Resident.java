@@ -29,46 +29,46 @@ public class Resident {
     @JsonProperty("id")
     private String id;
     
-    @NotBlank(message = "Le numéro de lot est obligatoire")
-    @Size(min = 1, max = 20, message = "Le numéro de lot doit contenir entre 1 et 20 caractères")
+    @NotBlank(message = "Lot number is required")
+    @Size(min = 1, max = 20, message = "Lot number must be between 1 and 20 characters")
     @JsonProperty("lot_id")
     private String lotId;
-    
-    @NotBlank(message = "Le bâtiment est obligatoire")
-    @Size(min = 1, max = 10, message = "Le bâtiment doit contenir entre 1 et 10 caractères")
+
+    @NotBlank(message = "Building is required")
+    @Size(min = 1, max = 10, message = "Building must be between 1 and 10 characters")
     @Indexed
     private String batiment;
-    
-    @NotBlank(message = "L'étage est obligatoire")
-    @Size(min = 1, max = 5, message = "L'étage doit contenir entre 1 et 5 caractères")
+
+    @NotBlank(message = "Floor is required")
+    @Size(min = 1, max = 5, message = "Floor must be between 1 and 5 characters")
     private String etage;
-    
-    @NotBlank(message = "Le numéro de porte est obligatoire")
-    @Size(min = 1, max = 10, message = "Le numéro de porte doit contenir entre 1 et 10 caractères")
+
+    @NotBlank(message = "Door number is required")
+    @Size(min = 1, max = 10, message = "Door number must be between 1 and 10 characters")
     private String porte;
-    
-    @Size(max = 20, message = "L'identifiant de cave ne peut pas dépasser 20 caractères")
+
+    @Size(max = 20, message = "Storage room ID cannot exceed 20 characters")
     @JsonProperty("cave_id")
     private String caveId;
-    
-    @Pattern(regexp = "^(Propriétaire Résident|Propriétaire Bailleur)?$", 
-             message = "Le statut doit être: Propriétaire Résident ou Propriétaire Bailleur",
+
+    @Pattern(regexp = "^(Propriétaire Résident|Propriétaire Bailleur)?$",
+             message = "Status must be: Propriétaire Résident or Propriétaire Bailleur",
              flags = Pattern.Flag.CANON_EQ)
     @JsonProperty("statut_lot")
     private String statutLot;
-    
-    @NotBlank(message = "Le nom du propriétaire est obligatoire")
-    @Size(min = 2, max = 100, message = "Le nom du propriétaire doit contenir entre 2 et 100 caractères")
+
+    @NotBlank(message = "Owner name is required")
+    @Size(min = 2, max = 100, message = "Owner name must be between 2 and 100 characters")
     @JsonProperty("proprietaire_nom")
     private String proprietaireNom;
-    
-    @Pattern(regexp = "^(\\+?[0-9\\s.-]{10,20})?$", 
-             message = "Le numéro de téléphone n'est pas valide")
+
+    @Pattern(regexp = "^(\\+?[0-9\\s.-]{10,20})?$",
+             message = "Phone number is not valid")
     @JsonProperty("proprietaire_mobile")
     private String proprietaireMobile;
-    
-    @Email(message = "L'adresse email n'est pas valide")
-    @Size(max = 100, message = "L'email ne peut pas dépasser 100 caractères")
+
+    @Email(message = "Email address is not valid")
+    @Size(max = 100, message = "Email cannot exceed 100 characters")
     @JsonProperty("proprietaire_email")
     private String proprietaireEmail;
     

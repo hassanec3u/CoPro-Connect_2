@@ -14,27 +14,27 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class HappixAccount {
     
-    @NotBlank(message = "Le nom du compte Happix est obligatoire")
-    @Size(min = 2, max = 100, message = "Le nom du compte Happix doit contenir entre 2 et 100 caractères")
+    @NotBlank(message = "Happix account name is required")
+    @Size(min = 2, max = 100, message = "Happix account name must be between 2 and 100 characters")
     private String nom;
-    
-    @Pattern(regexp = "^(\\+?[0-9\\s.-]{10,20})?$", 
-             message = "Le numéro de téléphone du compte Happix n'est pas valide")
+
+    @Pattern(regexp = "^(\\+?[0-9\\s.-]{10,20})?$",
+             message = "Happix account phone number is not valid")
     private String mobile;
-    
-    @Email(message = "L'adresse email du compte Happix n'est pas valide")
-    @Size(max = 100, message = "L'email du compte Happix ne peut pas dépasser 100 caractères")
+
+    @Email(message = "Happix account email address is not valid")
+    @Size(max = 100, message = "Happix account email cannot exceed 100 characters")
     private String email;
-    
-    @Size(max = 50, message = "Le nom de borne ne peut pas dépasser 50 caractères")
+
+    @Size(max = 50, message = "Terminal name cannot exceed 50 characters")
     @JsonProperty("nom_borne")
     private String nomBorne;
-    
-    @Pattern(regexp = "^(resident|autorisé)?$", 
-             message = "Le type doit être: resident ou autorisé",
+
+    @Pattern(regexp = "^(resident|autorisé)?$",
+             message = "Type must be: resident or autorisé",
              flags = Pattern.Flag.CANON_EQ)
     private String type;
-    
-    @Size(max = 50, message = "La relation ne peut pas dépasser 50 caractères")
+
+    @Size(max = 50, message = "Relationship cannot exceed 50 characters")
     private String relation;
 }

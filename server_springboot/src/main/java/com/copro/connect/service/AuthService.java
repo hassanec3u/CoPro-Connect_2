@@ -27,14 +27,14 @@ public class AuthService {
     private final MfaService mfaService;
 
     /**
-     * Étape 1 : Vérifie les identifiants.
-     * Si MFA activé -> génère et envoie le code, retourne mfa_required=true
-     * Si MFA désactivé -> retourne directement le JWT
+     * Step 1: Verifies credentials.
+     * If MFA enabled -> generates and sends the code, returns mfa_required=true
+     * If MFA disabled -> returns the JWT directly
      */
     public LoginResponse login(LoginRequest loginRequest) {
         log.info("Login attempt for user: {}", loginRequest.getUsername());
 
-        // Authentifier les identifiants (username/password)
+        // Authenticate credentials (username/password)
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getUsername(),
@@ -43,9 +43,9 @@ public class AuthService {
         );
 
         User user = userRepository.findByUsername(loginRequest.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur introuvable"));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        // Si MFA activé et email configuré -> envoyer le code
+        // If MFA enabled and email configured -> send the code
         if (user.isMfaEnabled() && user.getEmail() != null && !user.getEmail().isBlank()) {
             log.info("MFA required for user: {}", user.getUsername());
             mfaService.generateAndSendCode(user.getUsername());
@@ -53,14 +53,14 @@ public class AuthService {
             return LoginResponse.mfaRequired(maskedEmail);
         }
 
-        // Pas de MFA -> connexion directe
+        // No MFA -> direct login
         log.info("Login successful (no MFA) for user: {}", user.getUsername());
         String jwt = jwtUtils.generateToken(user.getUsername());
         return LoginResponse.success(jwt, user);
     }
 
     /**
-     * Étape 2 : Vérifie le code MFA et retourne le JWT si valide
+     * Step 2: Verifies the MFA code and returns the JWT if valid
      */
     public LoginResponse verifyMfa(MfaVerifyRequest request) {
         log.info("MFA verification attempt for user: {}", request.getUsername());
@@ -69,15 +69,15 @@ public class AuthService {
 
         if (!valid) {
             log.warn("MFA verification failed for user: {}", request.getUsername());
-            throw new InvalidMfaCodeException("Code de vérification invalide ou expiré");
+            throw new InvalidMfaCodeException("Invalid or expired verification code");
         }
 
         User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur introuvable"));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         String jwt = jwtUtils.generateToken(user.getUsername());
 
-        // Positionner le SecurityContext
+        // Set the SecurityContext
         Authentication auth = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(auth);
 

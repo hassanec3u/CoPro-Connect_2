@@ -36,7 +36,7 @@ public class ResidentService {
         Pageable pageable = createPageable(page, size, sort);
         Page<Resident> residentPage;
         
-        // Si des filtres sont appliqués
+        // If filters are applied
         if ((search != null && !search.trim().isEmpty()) || 
             (batiment != null && !batiment.equals("Tous")) || 
             (statutLot != null && !statutLot.equals("Tous"))) {
@@ -47,8 +47,8 @@ public class ResidentService {
             
             residentPage = residentRepository.findWithFilters(searchTerm, batFilter, statutFilter, pageable);
         } else {
-            // Pas de filtres, requête normale avec tri du Pageable
-            // Le tri par défaut est géré dans createPageable()
+            // No filters, normal query with Pageable sorting
+            // Default sorting is handled in createPageable()
             residentPage = residentRepository.findAll(pageable);
         }
         
@@ -76,12 +76,12 @@ public class ResidentService {
     public Resident createResident(Resident resident) {
         log.info("Creating new resident: {}", resident.getLotId());
         
-        // Normaliser les données
+        // Normalize data
         normalizeResidentData(resident);
-        
-        // Générer un nouvel ID si non fourni
+
+        // Generate a new ID if not provided
         if (resident.getId() == null || resident.getId().isEmpty()) {
-            resident.setId(null); // MongoDB génèrera automatiquement un ObjectId
+            resident.setId(null); // MongoDB will automatically generate an ObjectId
         }
         
         return residentRepository.save(resident);
@@ -93,13 +93,13 @@ public class ResidentService {
         
         Resident resident = getResidentById(id);
         
-        // Créer une copie de l'ancien résident pour l'historique
+        // Create a copy of the old resident for history
         Resident oldResident = createCopy(resident);
-        
-        // Normaliser les données
+
+        // Normalize data
         normalizeResidentData(residentDetails);
-        
-        // Mise à jour des champs
+
+        // Update fields
         resident.setLotId(residentDetails.getLotId());
         resident.setBatiment(residentDetails.getBatiment());
         resident.setEtage(residentDetails.getEtage());
@@ -114,12 +114,12 @@ public class ResidentService {
         
         Resident updatedResident = residentRepository.save(resident);
         
-        // Enregistrer dans l'historique
+        // Record in history
         try {
             residentHistoryService.recordUpdate(oldResident, updatedResident);
         } catch (Exception e) {
-            log.error("Erreur lors de l'enregistrement de l'historique pour le résident {}", id, e);
-            // On continue même si l'historique échoue pour ne pas bloquer la mise à jour
+            log.error("Error recording history for resident {}", id, e);
+            // Continue even if history fails to not block the update
         }
         
         return updatedResident;
@@ -130,12 +130,12 @@ public class ResidentService {
         log.info("Deleting resident with id: {}", id);
         Resident resident = getResidentById(id);
         
-        // Enregistrer dans l'historique avant la suppression
+        // Record in history before deletion
         try {
             residentHistoryService.recordDelete(resident);
         } catch (Exception e) {
-            log.error("Erreur lors de l'enregistrement de l'historique pour le résident {}", id, e);
-            // On continue même si l'historique échoue pour ne pas bloquer la suppression
+            log.error("Error recording history for resident {}", id, e);
+            // Continue even if history fails to not block the deletion
         }
         
         residentRepository.delete(resident);
@@ -152,11 +152,11 @@ public class ResidentService {
     }
     
     /**
-     * Crée un objet Pageable avec tri optionnel
+     * Creates a Pageable object with optional sorting
      */
     private Pageable createPageable(int page, int size, String sort) {
         if (sort != null && !sort.trim().isEmpty()) {
-            // Parser le paramètre sort: "field,direction" (ex: "lotId,asc")
+            // Parse the sort parameter: "field,direction" (e.g. "lotId,asc")
             String[] sortParams = sort.split(",");
             String field = sortParams[0].trim();
             String direction = sortParams.length > 1 ? sortParams[1].trim() : "asc";
@@ -167,12 +167,12 @@ public class ResidentService {
             
             return PageRequest.of(page, size, sortObj);
         }
-        // Tri par défaut: batiment asc, porte asc
+        // Default sort: batiment asc, porte asc
         return PageRequest.of(page, size, Sort.by("batiment").ascending().and(Sort.by("porte").ascending()));
     }
     
     /**
-     * Normalise les données du résident (trim des espaces, mise en forme)
+     * Normalizes resident data (trims whitespace, formatting)
      */
     private void normalizeResidentData(Resident resident) {
         if (resident.getLotId() != null) {
@@ -197,7 +197,7 @@ public class ResidentService {
             resident.setProprietaireMobile(resident.getProprietaireMobile().trim());
         }
         
-        // Normaliser les occupants
+        // Normalize occupants
         if (resident.getOccupants() != null) {
             resident.getOccupants().forEach(occupant -> {
                 if (occupant.getNom() != null) {
@@ -212,7 +212,7 @@ public class ResidentService {
             });
         }
         
-        // Normaliser les comptes Happix
+        // Normalize Happix accounts
         if (resident.getHappixAccounts() != null) {
             resident.getHappixAccounts().forEach(account -> {
                 if (account.getNom() != null) {
@@ -229,7 +229,7 @@ public class ResidentService {
     }
     
     /**
-     * Crée une copie profonde d'un résident pour l'historique
+     * Creates a deep copy of a resident for history tracking
      */
     private Resident createCopy(Resident original) {
         Resident copy = new Resident();
@@ -246,14 +246,14 @@ public class ResidentService {
         copy.setCreatedAt(original.getCreatedAt());
         copy.setUpdatedAt(original.getUpdatedAt());
         
-        // Copie des occupants
+        // Copy occupants
         if (original.getOccupants() != null) {
             copy.setOccupants(new java.util.ArrayList<>(original.getOccupants()));
         } else {
             copy.setOccupants(new java.util.ArrayList<>());
         }
         
-        // Copie des comptes Happix
+        // Copy Happix accounts
         if (original.getHappixAccounts() != null) {
             copy.setHappixAccounts(new java.util.ArrayList<>(original.getHappixAccounts()));
         } else {

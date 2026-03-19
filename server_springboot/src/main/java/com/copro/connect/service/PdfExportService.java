@@ -36,10 +36,10 @@ public class PdfExportService {
     private static final Color STRIPE_BG = new Color(249, 250, 251);
 
     private static final String HAPPIX = "Happix";
-    private static final String LISTE_COMPTES_HAPPIX = "Liste des comptes " + HAPPIX;
+    private static final String LISTE_COMPTES_HAPPIX = HAPPIX + " Accounts List";
 
     /**
-     * Exporte tous les résidents en PDF
+     * Exports all residents to PDF
      */
     public byte[] exportResidentsPdf() {
         log.info("Generating residents PDF export");
@@ -53,12 +53,12 @@ public class PdfExportService {
             document.open();
 
             // Titre
-            Paragraph title = new Paragraph("Liste des résidents", TITLE_FONT);
+            Paragraph title = new Paragraph("Residents List", TITLE_FONT);
             title.setSpacingAfter(4);
             document.add(title);
 
             String dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-            Paragraph subtitle = new Paragraph("Généré le " + dateStr + " — " + residents.size() + " résidents", SUBTITLE_FONT);
+            Paragraph subtitle = new Paragraph("Generated on " + dateStr + " — " + residents.size() + " residents", SUBTITLE_FONT);
             subtitle.setSpacingAfter(12);
             document.add(subtitle);
 
@@ -68,7 +68,7 @@ public class PdfExportService {
             table.setWidthPercentage(100);
             table.setSpacingBefore(4);
 
-            String[] headers = {"Lot", "Bât", "Appt", "Étage", "Cave", "Statut", "Propriétaire", "Mobile", "Email", "Occupants"};
+            String[] headers = {"Lot", "Bldg", "Apt", "Floor", "Storage", "Status", "Owner", "Mobile", "Email", "Occupants"};
             for (String h : headers) {
                 table.addCell(headerCell(h));
             }
@@ -93,20 +93,20 @@ public class PdfExportService {
             document.close();
         } catch (Exception e) {
             log.error("Error generating residents PDF", e);
-            throw new RuntimeException("Erreur lors de la génération du PDF", e);
+            throw new RuntimeException("Error generating PDF", e);
         }
 
         return out.toByteArray();
     }
 
     /**
-     * Exporte tous les comptes Happix en PDF
+     * Exports all Happix accounts to PDF
      */
     public byte[] exportHappixPdf() {
         log.info("Generating {} PDF export", HAPPIX);
         List<Resident> residents = residentRepository.findAllByOrderByBatimentAscPorteAsc();
 
-        // Extraire tous les comptes Happix
+        // Extract all Happix accounts
         List<HappixEntry> entries = residents.stream()
                 .flatMap(r -> {
                     List<HappixAccount> accounts = r.getHappixAccounts() != null ? r.getHappixAccounts() : List.of();
@@ -136,7 +136,7 @@ public class PdfExportService {
             document.add(title);
 
             String dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-            Paragraph subtitle = new Paragraph("Généré le " + dateStr + " — " + entries.size() + " comptes", SUBTITLE_FONT);
+            Paragraph subtitle = new Paragraph("Generated on " + dateStr + " — " + entries.size() + " accounts", SUBTITLE_FONT);
             subtitle.setSpacingAfter(12);
             document.add(subtitle);
 
@@ -145,7 +145,7 @@ public class PdfExportService {
             table.setWidthPercentage(100);
             table.setSpacingBefore(4);
 
-            String[] headers = {"Nom", "Email", "Numéro", "Nom borne", "Type", "Relation", "Bât", "Appt", "Résidents"};
+            String[] headers = {"Name", "Email", "Number", "Terminal", "Type", "Relationship", "Bldg", "Apt", "Residents"};
             for (String h : headers) {
                 table.addCell(headerCell(h));
             }
@@ -169,13 +169,13 @@ public class PdfExportService {
             document.close();
         } catch (Exception e) {
             log.error("Error generating {} PDF", HAPPIX, e);
-            throw new RuntimeException("Erreur lors de la génération du PDF", e);
+            throw new RuntimeException("Error generating PDF", e);
         }
 
         return out.toByteArray();
     }
 
-    // ==================== UTILITAIRES ====================
+    // ==================== UTILITIES ====================
 
     private PdfPCell headerCell(String text) {
         PdfPCell cell = new PdfPCell(new Phrase(text, HEADER_FONT));

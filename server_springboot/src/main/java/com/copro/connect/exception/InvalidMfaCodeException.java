@@ -1,7 +1,7 @@
 package com.copro.connect.exception;
 
 /**
- * Levée lorsque le code MFA saisi est invalide ou expiré.
+ * Thrown when the entered MFA code is invalid or expired.
  */
 public class InvalidMfaCodeException extends RuntimeException {
 

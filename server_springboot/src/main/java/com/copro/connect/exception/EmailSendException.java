@@ -1,7 +1,7 @@
 package com.copro.connect.exception;
 
 /**
- * Levée lorsque l'envoi d'un email échoue (messagerie, encodage, etc.).
+ * Thrown when sending an email fails (messaging, encoding, etc.).
  */
 public class EmailSendException extends RuntimeException {
 

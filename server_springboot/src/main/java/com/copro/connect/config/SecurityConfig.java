@@ -32,7 +32,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> {}) // Utilise la configuration CORS par défaut
+                .cors(cors -> {}) // Uses the default CORS configuration
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
