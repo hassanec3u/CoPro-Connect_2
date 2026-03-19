@@ -2,6 +2,7 @@ package com.copro.connect.controller;
 
 import com.copro.connect.dto.LoginRequest;
 import com.copro.connect.dto.LoginResponse;
+import com.copro.connect.dto.MfaVerifyRequest;
 import com.copro.connect.service.AuthService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,5 +44,21 @@ class AuthControllerTest {
         assertThat(result.getBody().getUser().getUsername()).isEqualTo("admin");
         assertThat(result.getBody().getUser().getName()).isEqualTo("Admin");
         verify(authService).login(any(LoginRequest.class));
+    }
+
+    @Test
+    @DisplayName("verifyMfa retourne token et userInfo si code valide")
+    void verifyMfa_returnsTokenAndUser() {
+        LoginResponse response = LoginResponse.success("jwt-mfa-token",
+                new com.copro.connect.model.User("user-1", "admin", "password", "Admin", "admin@test.fr", "ADMIN", true, null, null));
+        when(authService.verifyMfa(any(MfaVerifyRequest.class))).thenReturn(response);
+
+        MfaVerifyRequest request = new MfaVerifyRequest("admin", "123456");
+        ResponseEntity<LoginResponse> result = authController.verifyMfa(request);
+
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).isNotNull();
+        assertThat(result.getBody().getToken()).isEqualTo("jwt-mfa-token");
+        verify(authService).verifyMfa(any(MfaVerifyRequest.class));
     }
 }

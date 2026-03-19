@@ -68,4 +68,16 @@ class JwtUtilsTest {
         String token = jwtUtils.generateToken("user123");
         assertThat(jwtUtils.getUsernameFromToken(token)).isEqualTo("user123");
     }
+
+    @Test
+    @DisplayName("validateToken retourne false pour token expiré")
+    void validateToken_expiredToken_returnsFalse() {
+        JwtUtils expiredJwtUtils = new JwtUtils();
+        ReflectionTestUtils.setField(expiredJwtUtils, "jwtSecret", SECRET);
+        ReflectionTestUtils.setField(expiredJwtUtils, "jwtExpirationMs", -1000L); // déjà expiré
+
+        String token = expiredJwtUtils.generateToken("admin");
+        assertThat(jwtUtils.validateToken(token)).isFalse();
+    }
+
 }

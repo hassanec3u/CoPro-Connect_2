@@ -2,6 +2,7 @@ package com.copro.connect.service;
 
 import com.copro.connect.dto.LoginRequest;
 import com.copro.connect.dto.LoginResponse;
+import com.copro.connect.dto.MfaVerifyRequest;
 import com.copro.connect.model.User;
 import com.copro.connect.repository.UserRepository;
 import com.copro.connect.security.JwtUtils;
@@ -118,5 +119,50 @@ class AuthServiceTest {
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(userRepository).findByUsername("admin");
+    }
+
+    // ==================== verifyMfa ====================
+
+    @Test
+    @DisplayName("verifyMfa retourne token + userInfo si code valide")
+    void verifyMfa_validCode_returnsToken() {
+        MfaVerifyRequest request = new MfaVerifyRequest("admin", "123456");
+        when(mfaService.verifyCode("admin", "123456")).thenReturn(true);
+        when(userRepository.findByUsername("admin")).thenReturn(Optional.of(user));
+        when(jwtUtils.generateToken("admin")).thenReturn("jwt-mfa-token");
+
+        LoginResponse response = authService.verifyMfa(request);
+
+        assertThat(response.getToken()).isEqualTo("jwt-mfa-token");
+        assertThat(response.getMfaRequired()).isFalse();
+        assertThat(response.getUser()).isNotNull();
+        assertThat(response.getUser().getUsername()).isEqualTo("admin");
+        verify(mfaService).verifyCode("admin", "123456");
+        verify(jwtUtils).generateToken("admin");
+    }
+
+    @Test
+    @DisplayName("verifyMfa lance InvalidMfaCodeException si code invalide")
+    void verifyMfa_invalidCode_throws() {
+        MfaVerifyRequest request = new MfaVerifyRequest("admin", "999999");
+        when(mfaService.verifyCode("admin", "999999")).thenReturn(false);
+
+        assertThatThrownBy(() -> authService.verifyMfa(request))
+                .isInstanceOf(com.copro.connect.exception.InvalidMfaCodeException.class)
+                .hasMessageContaining("invalide");
+
+        verify(mfaService).verifyCode("admin", "999999");
+        verifyNoInteractions(jwtUtils);
+    }
+
+    @Test
+    @DisplayName("verifyMfa lance exception si user non trouvé après vérification")
+    void verifyMfa_userNotFound_throws() {
+        MfaVerifyRequest request = new MfaVerifyRequest("admin", "123456");
+        when(mfaService.verifyCode("admin", "123456")).thenReturn(true);
+        when(userRepository.findByUsername("admin")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> authService.verifyMfa(request))
+                .isInstanceOf(RuntimeException.class);
     }
 }

@@ -5,6 +5,7 @@ import com.copro.connect.dto.StatisticsResponse;
 import com.copro.connect.exception.ResidentNotFoundException;
 import com.copro.connect.model.Resident;
 import com.copro.connect.repository.ResidentRepository;
+import com.copro.connect.service.ResidentHistoryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -32,6 +34,9 @@ class ResidentServiceTest {
 
     @Mock
     private ResidentRepository residentRepository;
+
+    @Mock
+    private ResidentHistoryService residentHistoryService;
 
     @InjectMocks
     private ResidentService residentService;
@@ -230,5 +235,92 @@ class ResidentServiceTest {
 
         assertThat(result).hasSize(1).containsExactly(resident);
         verify(residentRepository).findByStatutLot("Propriétaire Résident");
+    }
+
+    @Test
+    @DisplayName("createResident normalise les données avec occupants et happix")
+    void createResident_normalizesOccupantsAndHappix() {
+        Resident toCreate = new Resident();
+        toCreate.setLotId("  LOT-003  ");
+        toCreate.setBatiment("  B  ");
+        toCreate.setEtage("  2  ");
+        toCreate.setPorte("  201  ");
+        toCreate.setProprietaireNom("  Martin  ");
+        toCreate.setProprietaireEmail("  MARTIN@TEST.COM  ");
+        toCreate.setProprietaireMobile("  0600000000  ");
+
+        com.copro.connect.model.Occupant occ = new com.copro.connect.model.Occupant("  Jean  ", "  0700000000  ", "  JEAN@TEST.COM  ");
+        toCreate.setOccupants(List.of(occ));
+
+        com.copro.connect.model.HappixAccount h = new com.copro.connect.model.HappixAccount("  Alice  ", "  0800000000  ", "  ALICE@TEST.COM  ", null, null, null);
+        toCreate.setHappixAccounts(List.of(h));
+
+        when(residentRepository.save(any(Resident.class))).thenAnswer(inv -> {
+            Resident r = inv.getArgument(0);
+            r.setId("res-3");
+            return r;
+        });
+
+        Resident result = residentService.createResident(toCreate);
+
+        assertThat(result.getLotId()).isEqualTo("LOT-003");
+        assertThat(result.getBatiment()).isEqualTo("B");
+        assertThat(result.getProprietaireEmail()).isEqualTo("martin@test.com");
+        assertThat(result.getOccupants().get(0).getNom()).isEqualTo("Jean");
+        assertThat(result.getOccupants().get(0).getEmail()).isEqualTo("jean@test.com");
+        assertThat(result.getHappixAccounts().get(0).getNom()).isEqualTo("Alice");
+        assertThat(result.getHappixAccounts().get(0).getEmail()).isEqualTo("alice@test.com");
+    }
+
+    @Test
+    @DisplayName("createResident avec ID vide le remet à null")
+    void createResident_emptyId_setsNull() {
+        Resident toCreate = new Resident();
+        toCreate.setId("");
+        toCreate.setLotId("LOT-004");
+        toCreate.setBatiment("A");
+        toCreate.setEtage("1");
+        toCreate.setPorte("101");
+        toCreate.setProprietaireNom("Test");
+
+        when(residentRepository.save(any(Resident.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Resident result = residentService.createResident(toCreate);
+
+        assertThat(result.getId()).isNull();
+    }
+
+    @Test
+    @DisplayName("getResidentsPaginated avec sort desc")
+    void getResidentsPaginated_withDescSort() {
+        Page<Resident> page = new PageImpl<>(List.of(resident), PageRequest.of(0, 10), 1);
+        when(residentRepository.findAll(any(Pageable.class))).thenReturn(page);
+
+        PagedResidentsResponse response = residentService.getResidentsPaginated(0, 10, null, null, null, "lotId,desc");
+
+        assertThat(response.getResidents()).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("getResidentsPaginated avec sort sans direction")
+    void getResidentsPaginated_withSortNoDirection() {
+        Page<Resident> page = new PageImpl<>(List.of(resident), PageRequest.of(0, 10), 1);
+        when(residentRepository.findAll(any(Pageable.class))).thenReturn(page);
+
+        PagedResidentsResponse response = residentService.getResidentsPaginated(0, 10, null, null, null, "lotId");
+
+        assertThat(response.getResidents()).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("getResidentsPaginated avec filtre batiment=Tous ne filtre pas")
+    void getResidentsPaginated_batimentTous_noFilter() {
+        Page<Resident> page = new PageImpl<>(List.of(resident), PageRequest.of(0, 10), 1);
+        when(residentRepository.findAll(any(Pageable.class))).thenReturn(page);
+
+        PagedResidentsResponse response = residentService.getResidentsPaginated(0, 10, null, "Tous", "Tous", null);
+
+        assertThat(response.getResidents()).hasSize(1);
+        verify(residentRepository).findAll(any(Pageable.class));
     }
 }

@@ -154,6 +154,76 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getBody().getMessage()).isEqualTo("Erreur serveur interne");
     }
 
+    @Test
+    @DisplayName("handleInvalidMfaCode retourne 401")
+    void handleInvalidMfaCode_returns401() {
+        stubWebRequest();
+        InvalidMfaCodeException ex = new InvalidMfaCodeException("Code invalide");
+
+        ResponseEntity<ErrorResponse> response = handler.handleInvalidMfaCode(ex, webRequest);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getMessage()).isEqualTo("Code invalide");
+        assertThat(response.getBody().getStatus()).isEqualTo(401);
+    }
+
+    @Test
+    @DisplayName("handleEmailSend retourne 503")
+    void handleEmailSend_returns503() {
+        stubWebRequest();
+        EmailSendException ex = new EmailSendException("Email non envoyé");
+
+        ResponseEntity<ErrorResponse> response = handler.handleEmailSend(ex, webRequest);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getMessage()).isEqualTo("Email non envoyé");
+        assertThat(response.getBody().getStatus()).isEqualTo(503);
+    }
+
+    @Test
+    @DisplayName("handleConstraintViolation retourne 400")
+    void handleConstraintViolation_returns400() {
+        jakarta.validation.Validator validator = jakarta.validation.Validation.buildDefaultValidatorFactory().getValidator();
+        Resident invalid = new Resident();
+        java.util.Set<jakarta.validation.ConstraintViolation<Resident>> violations = validator.validate(invalid);
+        if (!violations.isEmpty()) {
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            jakarta.validation.ConstraintViolationException ex =
+                    new jakarta.validation.ConstraintViolationException((java.util.Set) violations);
+
+            ResponseEntity<java.util.Map<String, Object>> response = handler.handleConstraintViolation(ex);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(response.getBody()).containsKey("errors");
+            assertThat(response.getBody().get("status")).isEqualTo(400);
+        }
+    }
+
+    @Test
+    @DisplayName("handleRuntimeException avec 'introuvable' retourne 404")
+    void handleRuntimeException_introuvable_returns404() {
+        stubWebRequest();
+        RuntimeException ex = new RuntimeException("Utilisateur introuvable");
+
+        ResponseEntity<ErrorResponse> response = handler.handleRuntimeException(ex, webRequest);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("handleRuntimeException avec message null retourne 500")
+    void handleRuntimeException_nullMessage_returns500() {
+        stubWebRequest();
+        RuntimeException ex = new RuntimeException((String) null);
+
+        ResponseEntity<ErrorResponse> response = handler.handleRuntimeException(ex, webRequest);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(response.getBody().getMessage()).isEqualTo("Erreur serveur");
+    }
+
     private MethodArgumentNotValidException mockMethodArgumentNotValidException() throws Exception {
         Resident target = new Resident();
         BindingResult bindingResult = new BeanPropertyBindingResult(target, "resident");
