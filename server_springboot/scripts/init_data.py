@@ -3,8 +3,8 @@
 MongoDB data initialization script (external to the Java application).
 
 Usage:
-  python init_data.py              # Admin + residents (if empty)
-  python init_data.py --admin-only     # Only the admin user
+  python init_data.py              # Admin + test user + residents (if empty)
+  python init_data.py --admin-only     # Only the admin and test users
   python init_data.py --residents-only # Only the residents (if empty)
 
 Environment variables:
@@ -71,28 +71,59 @@ def get_db():
     return client.get_default_database()
 
 
-def ensure_admin_user(db):
-    users = db["users"]
-    if users.find_one({"username": "admin"}):
-        print("ℹ️  Admin user already exists.")
-        return
-    # 2a prefix for compatibility with Spring Security BCryptPasswordEncoder
+def _hash_password(plain: str) -> str:
+    """Hashes a password with BCrypt (prefix 2a for Spring Security compatibility)."""
     salt = bcrypt.gensalt(rounds=10, prefix=b"2a")
-    hashed = bcrypt.hashpw("admin123".encode("utf-8"), salt)
+    return bcrypt.hashpw(plain.encode("utf-8"), salt).decode("utf-8")
+
+
+def _create_user(db, *, username: str, password: str, name: str, email: str, role: str, mfa_enabled: bool):
+    users = db["users"]
+    if users.find_one({"username": username}):
+        print(f"ℹ️  User '{username}' already exists.")
+        return False
+    now = datetime.utcnow()
     users.insert_one({
-        "username": "admin",
-        "password": hashed.decode("utf-8"),
-        "name": "Administrator",
-        "email": "abouchekou@gmail.com",
-        "role": "ADMIN",
-        "mfaEnabled": True,
-        "createdAt": datetime.utcnow(),
-        "updatedAt": datetime.utcnow(),
+        "username": username,
+        "password": _hash_password(password),
+        "name": name,
+        "email": email,
+        "role": role,
+        "mfaEnabled": mfa_enabled,
+        "createdAt": now,
+        "updatedAt": now,
     })
-    print("✅ Admin user created.")
-    print("   Username: admin")
-    print("   Password: admin123")
-    print("   Email: abouchekou@gmail.com")
+    print(f"✅ User '{username}' created.")
+    print(f"   Username: {username}")
+    print(f"   Password: {password}")
+    print(f"   Email:    {email}")
+    print(f"   Role:     {role}")
+    return True
+
+
+def ensure_admin_user(db):
+    _create_user(
+        db,
+        username="admin",
+        password="admin123",
+        name="Administrator",
+        email="abouchekou@gmail.com",
+        role="ADMIN",
+        mfa_enabled=False,
+    )
+
+
+def ensure_test_user(db):
+    """Creates a non-admin test user to validate permissions."""
+    _create_user(
+        db,
+        username="user",
+        password="user123",
+        name="Test User",
+        email="testuser@example.com",
+        role="USER",
+        mfa_enabled=False,
+    )
 
 
 def ensure_residents_data(db):
@@ -136,6 +167,7 @@ def main():
 
         if not args.residents_only:
             ensure_admin_user(db)
+            ensure_test_user(db)
         if not args.admin_only:
             ensure_residents_data(db)
 

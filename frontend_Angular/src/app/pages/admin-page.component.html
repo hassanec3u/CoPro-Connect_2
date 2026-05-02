@@ -1,0 +1,102 @@
+<div class="admin-page">
+  <header class="header">
+    <button class="menu-toggle" (click)="openSidebar()" aria-label="Ouvrir le menu">☰</button>
+    <h1>🛡️ Administration</h1>
+    <button class="refresh-btn" (click)="loadUsers()" [disabled]="loading" aria-label="Rafraîchir">
+      <span *ngIf="!loading">↻ Rafraîchir</span>
+      <span *ngIf="loading">Chargement…</span>
+    </button>
+  </header>
+
+  <section class="intro-card">
+    <div class="intro-icon">🔐</div>
+    <div>
+      <h2>Gestion des comptes &amp; MFA</h2>
+      <p>
+        Activez ou désactivez l'authentification à deux facteurs (MFA) pour n'importe quel compte.
+        Seuls les administrateurs peuvent accéder à cette page.
+      </p>
+    </div>
+  </section>
+
+  <div class="toolbar">
+    <div class="search-wrapper">
+      <span class="search-icon">🔎</span>
+      <input
+        type="search"
+        class="search-input"
+        placeholder="Rechercher par nom, identifiant, email, rôle…"
+        [ngModel]="searchTerm"
+        (ngModelChange)="onSearchChange($event)"
+      />
+    </div>
+    <div class="stats">
+      <span class="stat-pill">
+        <strong>{{ filteredUsers.length }}</strong> / {{ users.length }} comptes
+      </span>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="error-banner">{{ error }}</div>
+
+  <div *ngIf="loading && users.length === 0" class="loading">Chargement des comptes…</div>
+
+  <div class="table-wrapper" *ngIf="!loading || users.length > 0">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Identifiant</th>
+          <th>Nom</th>
+          <th>Email</th>
+          <th>Rôle</th>
+          <th>Créé le</th>
+          <th class="center">MFA</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="filteredUsers.length === 0">
+          <td colspan="6" class="empty-row">Aucun compte ne correspond à la recherche.</td>
+        </tr>
+        <tr *ngFor="let user of filteredUsers; trackBy: trackById" [class.self-row]="isCurrentUser(user)">
+          <td>
+            <div class="user-name">
+              {{ user.username }}
+              <span class="self-badge" *ngIf="isCurrentUser(user)">vous</span>
+            </div>
+          </td>
+          <td>{{ user.name || '—' }}</td>
+          <td class="email-cell">{{ user.email || '—' }}</td>
+          <td>
+            <span class="role-badge" [class.admin]="(user.role || '').toUpperCase() === 'ADMIN'">
+              {{ user.role || 'USER' }}
+            </span>
+          </td>
+          <td>{{ formatDate(user.createdAt) }}</td>
+          <td class="center">
+            <label class="toggle" [class.disabled]="isUpdating(user)">
+              <input
+                type="checkbox"
+                [checked]="user.mfaEnabled"
+                [disabled]="isUpdating(user)"
+                (change)="onToggleMfa(user)"
+              />
+              <span class="slider"></span>
+              <span class="toggle-label" [class.active]="user.mfaEnabled">
+                {{ user.mfaEnabled ? 'Activé' : 'Désactivé' }}
+              </span>
+            </label>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<app-confirm-dialog
+  *ngIf="confirmDialog"
+  [message]="confirmDialog.message"
+  [confirmText]="confirmDialog.confirmText"
+  [cancelText]="confirmDialog.cancelText"
+  (confirm)="confirmDialog.onConfirm()"
+  (cancel)="cancelConfirm()"
+></app-confirm-dialog>

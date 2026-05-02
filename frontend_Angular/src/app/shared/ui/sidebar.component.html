@@ -3,6 +3,17 @@
     <h2>Pontet Admin</h2>
     <button class="sidebar-close-btn" (click)="close.emit()" aria-label="Fermer le menu">✖</button>
   </div>
+
+  <div class="sidebar-user" *ngIf="currentUser">
+    <div class="avatar">{{ (currentUser.name || currentUser.username).charAt(0).toUpperCase() }}</div>
+    <div class="user-meta">
+      <div class="user-name">{{ currentUser.name || currentUser.username }}</div>
+      <div class="user-role" [class.admin]="(currentUser.role || '').toUpperCase() === 'ADMIN'">
+        {{ currentUser.role || 'USER' }}
+      </div>
+    </div>
+  </div>
+
   <nav class="sidebar-nav">
     <ul>
       <li *ngFor="let item of menuItems">

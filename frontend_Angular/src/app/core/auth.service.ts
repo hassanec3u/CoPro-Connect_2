@@ -5,27 +5,32 @@ import { getUserFriendlyErrorMessage } from '../utils/error.utils';
 import { environment } from '../../environments/environment';
 
 const API_BASE = environment.apiUrl.replace('/api', '');
+const USER_STORAGE_KEY = 'user';
+
+export interface AuthUser {
+  id: string;
+  username: string;
+  name: string;
+  role: string;
+}
 
 export interface LoginResponse {
   token?: string;
   mfa_required?: boolean;
   masked_email?: string;
   message?: string;
-  user?: {
-    id: string;
-    username: string;
-    name: string;
-    role: string;
-  };
+  user?: AuthUser;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private tokenSubject = new BehaviorSubject<string | null>(this.getStoredValidToken());
+  private userSubject = new BehaviorSubject<AuthUser | null>(this.getStoredUser());
   private sessionExpiredSubject = new Subject<void>();
   private monitorSub?: Subscription;
 
   token$ = this.tokenSubject.asObservable();
+  user$ = this.userSubject.asObservable();
   sessionExpired$ = this.sessionExpiredSubject.asObservable();
 
   constructor(private http: HttpClient) {
@@ -51,17 +56,18 @@ export class AuthService {
           )
       );
 
-      // Si MFA requis, retourner la réponse sans stocker de token
       if (response?.mfa_required) {
         return response;
       }
 
-      // Pas de MFA -> stocker le token directement
       if (!response?.token) {
         throw new Error(response?.message || 'Erreur de connexion. Veuillez réessayer.');
       }
 
       this.storeToken(response.token);
+      if (response.user) {
+        this.storeUser(response.user);
+      }
       return response;
     } catch (error: any) {
       const userMessage = getUserFriendlyErrorMessage(error);
@@ -89,6 +95,9 @@ export class AuthService {
       }
 
       this.storeToken(response.token);
+      if (response.user) {
+        this.storeUser(response.user);
+      }
       return response;
     } catch (error: any) {
       const userMessage = getUserFriendlyErrorMessage(error);
@@ -98,7 +107,9 @@ export class AuthService {
 
   logout(triggeredByUser = true): void {
     localStorage.removeItem('token');
+    localStorage.removeItem(USER_STORAGE_KEY);
     this.tokenSubject.next(null);
+    this.userSubject.next(null);
     this.stopTokenMonitor();
     if (!triggeredByUser) {
       this.sessionExpiredSubject.next();
@@ -114,6 +125,15 @@ export class AuthService {
     return !!token && this.isTokenValid(token);
   }
 
+  get currentUser(): AuthUser | null {
+    return this.userSubject.value;
+  }
+
+  get isAdmin(): boolean {
+    const user = this.userSubject.value;
+    return !!user && (user.role || '').toUpperCase() === 'ADMIN';
+  }
+
   private storeToken(token: string): void {
     if (!this.isTokenValid(token)) {
       throw new Error('Erreur d\'authentification. Veuillez réessayer.');
@@ -123,11 +143,33 @@ export class AuthService {
     this.startTokenMonitor(token);
   }
 
+  private storeUser(user: AuthUser): void {
+    try {
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+    } catch {
+      // Ignorer les erreurs de storage (mode privé, quota, etc.)
+    }
+    this.userSubject.next(user);
+  }
+
+  private getStoredUser(): AuthUser | null {
+    try {
+      const raw = localStorage.getItem(USER_STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as AuthUser;
+      if (!parsed || !parsed.username) return null;
+      return parsed;
+    } catch {
+      return null;
+    }
+  }
+
   private getStoredValidToken(): string | null {
     const stored = localStorage.getItem('token');
     if (!stored) return null;
     if (!this.isTokenValid(stored)) {
       localStorage.removeItem('token');
+      localStorage.removeItem(USER_STORAGE_KEY);
       return null;
     }
     return stored;
